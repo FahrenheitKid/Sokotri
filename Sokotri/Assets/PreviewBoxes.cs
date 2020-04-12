@@ -10,7 +10,7 @@ public class PreviewBoxes : MonoBehaviour
     Sprite [] sprites =  new Sprite[6];
     SpriteRenderer spriteRenderer;    // Start is called before the first frame update
 
-    Box.type [] boxes = new Box.type[3];
+    Box.Element [] boxes = new Box.Element[3];
 
     [SerializeField]
     GameObject[] boxesRenderers = new GameObject[3];
@@ -36,17 +36,14 @@ public class PreviewBoxes : MonoBehaviour
             if((int)boxes[i] < 0 || (int)boxes[i] >= sprites.Length || i < 0 || i >= boxes.Length) continue;
 
             boxesRenderers[i].GetComponent<Image>().sprite = sprites[(int)boxes[i]];
-            boxesRenderers[i].GetComponent<Image>().color = (boxes[i] == Box.type.quintessential) ? Box.quintessentialColor : (Color32)Color.white;
+            boxesRenderers[i].GetComponent<Image>().color = (boxes[i] == Box.Element.quintessential) ? Box.quintessentialColor : (Color32)Color.white;
 
         }
     }
 
     void generateNextPreview()
     {
-      for (int i = 0; i < boxes.Length; i++)
-      {
-          boxes[i] = Box.getRandomBoxType();
-      }
+      boxes = Box.getRandomBoxElements(boxes.Length);
 
       updateSprites();
 

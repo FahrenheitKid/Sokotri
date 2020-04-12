@@ -63,4 +63,29 @@ public class Point
         return p;
     }
 
+    public void Copy(Point p)
+    {
+        x = p.x;
+        y = p.y;
+    }
+    public  bool Equals(Point p)
+    {
+        return (p.x == x && p.y == y);
+    }
+
+    public Point Clone()
+    {
+        return new Point(x,y);
+    }
+
+    public Point Clone(Point p)
+    {
+        return new Point(p.x,p.y);
+    }
+
+    public string print()
+    {
+        return ("(" + x +", " + y +")");
+    }
+
 }

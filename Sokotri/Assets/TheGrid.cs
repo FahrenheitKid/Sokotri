@@ -8,8 +8,10 @@ using System.IO;
 
 public class TheGrid : MonoBehaviour
 {
-    Tile.Status[,] gridLayout;
+    Tile.Kind[,] gridLayout;
     Tile [,] grid;
+    [SerializeField]
+    Player player;
 
     [Header("Prefabs")]
     [SerializeField]
@@ -50,6 +52,10 @@ public class TheGrid : MonoBehaviour
 
         setupGrid();
 
+        if(player == null) player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
+
+        player.SpawnAt(new Point(width / 2 + 2, height / 2 + 2));
+
     }
 
     // Update is called once per frame
@@ -70,9 +76,10 @@ public class TheGrid : MonoBehaviour
                 tile.Init(new Point(j,i), Color.white,this);
                 if(useGridLayout)
                 {
-                    tile.setStatus(gridLayout[j,i]);
+                    tile.setKind(gridLayout[i,j]);
                 }
                 tile.resetPosition();
+                grid[j,i] = tile;
             }
         }
         return;
@@ -88,13 +95,27 @@ public class TheGrid : MonoBehaviour
     public int getWidth() { return width;}
     public int getHeight(){ return height;}
 
+    public Tile GetTile(Point p)
+    {
+        if(isPointOutOfBounds(p)) return null;
+
+            return (grid[p.x,p.y].GetPoint().Equals(p)) ?  grid[p.x,p.y] : null;
+        
+        
+    }
+
+    public bool isPointOutOfBounds(Point p)
+    {
+        return (p.x < 0 || p.y < 0 || p.x >= width || p.y >= height || p.x >grid.GetLength(0) || p.y < grid.GetLength(1));
+    }
+
     public Vector2 getExpectedPositionFromPoint(Point p)
     {
         return new Vector2(p.x -width / 2 , -p.y + height / 2);
     }
 
      //load txt file with the map
-        private Tile.Status[, ] Load (string filePath)
+        private Tile.Kind[, ] Load (string filePath)
         {
             try
             {
@@ -161,7 +182,7 @@ public class TheGrid : MonoBehaviour
 #if MAP_LOADING_DEBUG
                     Debug.Log ("Parsing Completed!");
 #endif              
-                    return (Tile.Status[,]) (object) tiles;
+                    return (Tile.Kind[,]) (object) tiles;
                 }
             }
             catch (IOException e)
