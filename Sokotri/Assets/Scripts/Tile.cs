@@ -75,6 +75,10 @@ public class Tile : MonoBehaviour
         return status;
     }
 
+    public Box GetBox()
+    {
+        return box;
+    }
     public bool isEmpty ()
     {
         return (kind != Kind.hole && kind != Kind.wall && status != Status.box && status != Status.player);

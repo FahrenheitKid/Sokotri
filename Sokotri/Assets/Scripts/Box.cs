@@ -60,23 +60,18 @@ public class Box : MonoBehaviour
     {
         if (tribox == null) return false;
 
-        bool center = false;
+        
 
-        foreach (Box b in tribox.GetBoxes ())
-        {
-            if (b == this) continue;
+        
+        return (this != tribox.GetBoxes().First() && this != tribox.GetBoxes().Last());
 
-            if (isMyNeighbour (b, false))
-            {
-                center = true;
-            }
-            else
-            {
-                center = false;
-            }
-        }
+    }
 
-        return center;
+    public bool isBoxAtEdge(UtilityTools.Directions dir)
+    {
+        if(tribox == null || isCenterBox()) return false;
+
+        return (this == tribox.GetBoxes().First() || this == tribox.GetBoxes().Last());
 
     }
 
@@ -165,10 +160,12 @@ public class Box : MonoBehaviour
         if(oldTileNewStatus == Tile.Status.empty && tile != null)
         tile.setStatus(oldTileNewStatus);
 
-        tile = t;
+        
 
-        if (tile.GetStatus () != Tile.Status.box) tile.setStatus (Tile.Status.box, this);
-        index = tile.GetPoint().Clone();
+        if (t.GetStatus () != Tile.Status.box) t.setStatus (Tile.Status.box, this);
+        index = t.GetPoint().Clone();
+
+        tile = t;
     }
 
     public Element GetElement ()
@@ -176,6 +173,120 @@ public class Box : MonoBehaviour
         return element;
     }
 
+    public bool isInTribox()
+    {
+        return (tribox != null);
+    }
+
+    public TriBox GetTriBox()
+    {
+        return tribox;
+    }
+
+    public void Push(UtilityTools.Directions dir)
+    {
+        if(!isInTribox()) return;
+        
+         
+        if(isCenterBox())
+        {
+            //move
+
+             return;
+        }
+        else
+        {
+              bool clockw = true;
+              TriBox tri = tribox;
+                    switch (dir)
+                    {
+                        case UtilityTools.Directions.up:
+                            if (tri.IsVertical ())
+                            {
+                                //need to move up
+                            }
+                            else
+                            {
+                                //try to rotate
+
+                                clockw = (tri.GetBoxes ().First () == this);
+                                tribox.Rotate(clockw);
+                                 return;
+                            }
+
+                            break;
+
+                        case UtilityTools.Directions.upRight:
+
+                            break;
+
+                        case UtilityTools.Directions.right:
+
+                            if (!tri.IsVertical ())
+                            {
+                                //need to move right
+                            }
+                            else
+                            {
+                                //try to rotate
+
+                                clockw = (tri.GetBoxes ().First () == this);
+                                tri.Rotate (clockw);
+                                 return;
+                            }
+
+                            break;
+
+                        case UtilityTools.Directions.downRight:
+
+                            break;
+
+                        case UtilityTools.Directions.down:
+                            if (tri.IsVertical ())
+                            {
+                                //need to move down
+                            }
+                            else
+                            {
+                                //try to rotate
+
+                                clockw = (tri.GetBoxes ().Last () == this);
+                                tri.Rotate (clockw);
+                                 return;
+                            }
+
+                            break;
+
+                        case UtilityTools.Directions.downLeft:
+                            break;
+
+                        case UtilityTools.Directions.left:
+
+                            if (!tri.IsVertical ())
+                            {
+                                //need to move left
+                            }
+                            else
+                            {
+                                //try to rotate
+
+                                clockw = (tri.GetBoxes ().Last () == this);
+                                tri.Rotate (clockw);
+                                return;
+                            }
+
+                            break;
+
+                        case UtilityTools.Directions.upLeft:
+                            break;
+
+                        default:
+                            return;
+
+                    }
+        }
+
+    }
     public Tile getNeighbourTile(UtilityTools.Directions dir)
     {
         if(grid_ref == null) return null;

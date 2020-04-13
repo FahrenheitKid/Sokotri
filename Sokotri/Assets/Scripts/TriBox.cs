@@ -22,6 +22,9 @@ public class TriBox : MonoBehaviour
     [SerializeField]
     bool isVertical;
 
+    bool isRotating = false;
+    bool isMoving = false;
+
     // Start is called before the first frame update
     void Start ()
     {
@@ -129,75 +132,45 @@ public class TriBox : MonoBehaviour
     public void Rotate (bool clockwise)
     {
         //after checkups 
-
-        Box center = getCenterBox ();
-        if (center == null)
+         Box center = getCenterBox ();
+        if (center == null || isRotating || isMoving)
         {
             print ("center null");
             return;
         }
-        List<UtilityTools.Directions> directionsCheckList = new List<UtilityTools.Directions> ();
-        Tile destination1 = (isVertical) ? center.getNeighbourTile (UtilityTools.Directions.left) : center.getNeighbourTile (UtilityTools.Directions.up);
-        Tile destination2 = (isVertical) ? center.getNeighbourTile (UtilityTools.Directions.right) : center.getNeighbourTile (UtilityTools.Directions.down);
 
-        // in relation to CenterBox
-        if (isVertical && clockwise)
-        {
-            //check upright right downleft left
-            directionsCheckList.Add (UtilityTools.Directions.upRight);
-            directionsCheckList.Add (UtilityTools.Directions.right);
-            directionsCheckList.Add (UtilityTools.Directions.downLeft);
-            directionsCheckList.Add (UtilityTools.Directions.left);
+        if(!canRotate(clockwise)) return;
 
-        }
-        else if (isVertical && !clockwise)
-        {
-            //check upleft left downright right
-            directionsCheckList.Add (UtilityTools.Directions.upLeft);
-            directionsCheckList.Add (UtilityTools.Directions.left);
-            directionsCheckList.Add (UtilityTools.Directions.downRight);
-            directionsCheckList.Add (UtilityTools.Directions.right);
+        
 
-        }
-        else if (!isVertical && clockwise)
+        Tile destination1 = null;
+          Tile destination2 = null;
+        if(isVertical)
         {
-            //check upleft up downright down
-            directionsCheckList.Add (UtilityTools.Directions.upLeft);
-            directionsCheckList.Add (UtilityTools.Directions.up);
-            directionsCheckList.Add (UtilityTools.Directions.downRight);
-            directionsCheckList.Add (UtilityTools.Directions.down);
+            destination1 = (clockwise) ? center.getNeighbourTile (UtilityTools.Directions.right) : center.getNeighbourTile (UtilityTools.Directions.left);
+            destination2 = (clockwise) ? center.getNeighbourTile (UtilityTools.Directions.left) : center.getNeighbourTile (UtilityTools.Directions.right);
         }
         else
         {
-            //check downleft down upRight up
-
-            directionsCheckList.Add (UtilityTools.Directions.downLeft);
-            directionsCheckList.Add (UtilityTools.Directions.down);
-            directionsCheckList.Add (UtilityTools.Directions.upRight);
-            directionsCheckList.Add (UtilityTools.Directions.up);
+             destination1 = (clockwise) ? center.getNeighbourTile (UtilityTools.Directions.up) : center.getNeighbourTile (UtilityTools.Directions.down);
+             destination2 = (clockwise) ? center.getNeighbourTile (UtilityTools.Directions.down) : center.getNeighbourTile (UtilityTools.Directions.up);
         }
-
-        if (directionsCheckList.Any ())
-        {
-
-            if (!center.areMyNeighboursEmpty (directionsCheckList))
-            {
-                print ("something is blocking the rotation!");
-                return;
-            }
-        }
+      
 
         if (clockwise)
         {
-            transform.DORotate (transform.eulerAngles + Vector3.back * 90, TheGrid.moveTime);
+            isRotating = true;
+            transform.DORotate (transform.eulerAngles + Vector3.back * 90, TheGrid.moveTime).OnComplete(() => {isRotating = false;});
 
         }
         else
         {
-            transform.DORotate (transform.eulerAngles + Vector3.forward * 90, TheGrid.moveTime);
+            isRotating =true;
+            transform.DORotate (transform.eulerAngles + Vector3.forward * 90, TheGrid.moveTime).OnComplete(() => {isRotating = false;});
 
         }
         
+        //print("first box: " + boxes.First() + boxes.First().GetPoint().print() + " is moving to position" + destination1.GetPoint().Clone().print());
         boxes.First().setTile (destination1);
         boxes.Last().setTile (destination2);
 
@@ -227,12 +200,31 @@ public class TriBox : MonoBehaviour
             print("BEFORE My index is " + i + "and I'm " + boxes[i].name);
         }
         */
-        boxes = (!isVertical) ? boxes.OrderByDescending (x => x.GetPoint().x).ToArray() : boxes.OrderBy (y => y.GetPoint().y).ToArray();
+        boxes = (!isVertical) ? boxes.OrderBy (bi => bi.GetPoint().x).ToArray() : boxes.OrderBy (bi => bi.GetPoint().y).ToArray();
 
         for(int i = 0; i < boxes.Length;i ++)
         {
             boxes[i].name = "Box " + (i + 1) + boxes[i].GetPoint().print();
             boxes[i].transform.SetSiblingIndex(i);
+            boxes[i].GetComponent<SpriteRenderer>().color = Color.white;
+            
+        }
+        //boxes.First().GetComponent<SpriteRenderer>().color = Color.green;
+        //boxes.Last().GetComponent<SpriteRenderer>().color = Color.red;
+
+        if(!isVertical)
+        {
+            //leftmost
+             boxes.First(bo=> bo.GetPoint().x == boxes.Min(bi => bi.GetPoint().x)).GetComponent<SpriteRenderer>().color = Color.green;
+
+             boxes.First(bo=> bo.GetPoint().x == boxes.Max(bi => bi.GetPoint().x)).GetComponent<SpriteRenderer>().color = Color.red;
+
+
+        }
+        else
+        {
+            boxes.First(bo=> bo.GetPoint().y == boxes.Min(bi => bi.GetPoint().y)).GetComponent<SpriteRenderer>().color = Color.green;
+            boxes.First(bo=> bo.GetPoint().y == boxes.Max(bi => bi.GetPoint().y)).GetComponent<SpriteRenderer>().color = Color.red;
         }
 
         
@@ -303,9 +295,65 @@ public class TriBox : MonoBehaviour
         return true;
     }
 
-    public bool canRotate (UtilityTools.Directions dir)
+    public bool canRotate(bool clockwise)
     {
+        Box center = getCenterBox ();
+        if (center == null || isRotating || isMoving)
+        {
+            print ("center null");
+            return false;
+        }
+        List<UtilityTools.Directions> directionsCheckList = new List<UtilityTools.Directions> ();
+
+        // in relation to CenterBox
+        if (isVertical && clockwise)
+        {
+            //check upright right downleft left
+            directionsCheckList.Add (UtilityTools.Directions.upRight);
+            directionsCheckList.Add (UtilityTools.Directions.right);
+            directionsCheckList.Add (UtilityTools.Directions.downLeft);
+            directionsCheckList.Add (UtilityTools.Directions.left);
+
+        }
+        else if (isVertical && !clockwise)
+        {
+            //check upleft left downright right
+            directionsCheckList.Add (UtilityTools.Directions.upLeft);
+            directionsCheckList.Add (UtilityTools.Directions.left);
+            directionsCheckList.Add (UtilityTools.Directions.downRight);
+            directionsCheckList.Add (UtilityTools.Directions.right);
+
+        }
+        else if (!isVertical && clockwise)
+        {
+            //check upleft up downright down
+            directionsCheckList.Add (UtilityTools.Directions.upLeft);
+            directionsCheckList.Add (UtilityTools.Directions.up);
+            directionsCheckList.Add (UtilityTools.Directions.downRight);
+            directionsCheckList.Add (UtilityTools.Directions.down);
+        }
+        else
+        {
+            //check downleft down upRight up
+
+            directionsCheckList.Add (UtilityTools.Directions.downLeft);
+            directionsCheckList.Add (UtilityTools.Directions.down);
+            directionsCheckList.Add (UtilityTools.Directions.upRight);
+            directionsCheckList.Add (UtilityTools.Directions.up);
+        }
+
+        if (directionsCheckList.Any ())
+        {
+
+            if (!center.areMyNeighboursEmpty (directionsCheckList))
+            {
+                print ("something is blocking the rotation! Clock=" + clockwise);
+                return false;
+            }
+        }
+
         return true;
+
     }
     // Update is called once per frame
     void Update ()
