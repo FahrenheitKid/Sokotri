@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Box : MonoBehaviour
@@ -28,7 +29,7 @@ public class Box : MonoBehaviour
 
     [SerializeField]
     TriBox tribox;
-
+    [SerializeField]
     TheGrid grid_ref;
 
     [SerializeField]
@@ -44,6 +45,9 @@ public class Box : MonoBehaviour
     {
         if (spriteRenderer == null)
             spriteRenderer = GetComponent<SpriteRenderer> ();
+            if (grid_ref == null)
+             grid_ref = GameObject.FindGameObjectWithTag ("Grid").GetComponent<TheGrid> ();
+
     }
 
     // Update is called once per frame
@@ -78,9 +82,58 @@ public class Box : MonoBehaviour
 
     public bool isMyNeighbour (Box b, bool diagonals)
     {
-
+        if(b == null) return false;
         return index.isMyNeighbour (b.GetPoint ().Clone (), diagonals);
 
+    }
+
+    public bool isMyNeighbour (Point p, bool diagonals)
+    {
+        if(grid_ref.isPointOutOfBounds(p.Clone())) return false;
+
+        return index.isMyNeighbour (p.Clone (), diagonals);
+
+    }
+
+    public bool areMyNeighbours(List<Box> boxList, bool diagonals)
+    {
+        if(!boxList.Any() || boxList.FindAll(x => x == null).Any()) return false;
+
+        foreach(Box b in boxList)
+        {
+            if(!isMyNeighbour(b, diagonals)) return false;
+        }
+
+        return true;
+    }
+
+    public bool areMyNeighbours(List<Point> pointList, bool diagonals)
+    {
+        if(!pointList.Any() || pointList.FindAll(x => x == null).Any() ||
+        pointList.FindAll(x => grid_ref.isPointOutOfBounds(x.Clone())).Any()) return false;
+
+        foreach(Point p in pointList)
+        {
+            if(!isMyNeighbour(p,diagonals)) return false;
+        }
+
+        return true;
+    }
+    public bool isMyNeighbourEmpty(UtilityTools.Directions dir)
+    {
+        Tile neighbour = getNeighbourTile(dir);
+        return (neighbour == null) ? false : neighbour.isEmpty();
+    }
+
+    public bool areMyNeighboursEmpty(List<UtilityTools.Directions> dirList)
+    {
+         if(!dirList.Any()) return false;
+
+        foreach(UtilityTools.Directions d in dirList)
+        {
+            if(!isMyNeighbourEmpty(d)) return false;
+        }
+        return true;
     }
 
     public Point GetPoint ()
@@ -104,19 +157,30 @@ public class Box : MonoBehaviour
         }
     }
 
-    public void setTile (Tile t)
+    public void setTile (Tile t, Tile.Status oldTileNewStatus = Tile.Status.empty)
     {
         if (t == tile) return;
+
+
+        if(oldTileNewStatus == Tile.Status.empty && tile != null)
+        tile.setStatus(oldTileNewStatus);
 
         tile = t;
 
         if (tile.GetStatus () != Tile.Status.box) tile.setStatus (Tile.Status.box, this);
-
+        index = tile.GetPoint().Clone();
     }
 
     public Element GetElement ()
     {
         return element;
+    }
+
+    public Tile getNeighbourTile(UtilityTools.Directions dir)
+    {
+        if(grid_ref == null) return null;
+
+        return grid_ref.GetTile(index.getNeighbourPoint(dir));
     }
 
     public static Box.Element getRandomBoxElement ()

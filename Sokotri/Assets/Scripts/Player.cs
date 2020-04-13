@@ -15,8 +15,7 @@ public class Player : MonoBehaviour
     Tile tile;
     [SerializeField]
     bool isMoving = false;
-    [SerializeField]
-    float moveTime = 0.5f;
+    
 
     // Start is called before the first frame update
     void Start ()
@@ -78,7 +77,7 @@ public class Player : MonoBehaviour
             if (destination == null) return false;
             Vector3 destinationPos = destination.transform.position;
             destinationPos.z = -1;
-            transform.DOMove (destinationPos, moveTime).OnComplete (() =>
+            transform.DOMove (destinationPos, TheGrid.moveTime).OnComplete (() =>
             {
                 isMoving = false;
                 tile.setStatus (Tile.Status.empty);

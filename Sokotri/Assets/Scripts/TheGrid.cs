@@ -40,6 +40,9 @@ public class TheGrid : MonoBehaviour
     [SerializeField]
     string loadMapFilename;
 
+    [SerializeField]
+    public static float moveTime = 0.25f;
+
     // Start is called before the first frame update
     void Start ()
     {

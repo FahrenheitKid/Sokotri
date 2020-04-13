@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using DG.Tweening;
 using UnityEngine;
 
 public class TriBox : MonoBehaviour
@@ -31,7 +33,7 @@ public class TriBox : MonoBehaviour
     {
         if (grid_ref == null && grid != null) grid_ref = grid;
 
-        setVertical (_isVertical);
+        setVerticalInit (_isVertical);
 
         for (int i = 0; i < boxes.Length && i < elements.Length; i++)
         {
@@ -67,20 +69,41 @@ public class TriBox : MonoBehaviour
 
     public Box getCenterBox ()
     {
+
         if (boxes.Length < 3) return null;
 
-        return boxes[2];
+        for (int i = 0; i < boxes.Length; i++)
+        {
+            int count = 0;
+            for (int j = 0; j < boxes.Length; j++)
+            {
+                if (i == j) continue;
+
+                count++;
+
+                if (!boxes[i].isMyNeighbour (boxes[j], false)) break;
+
+                if (count >= 2)
+                {
+                    return boxes[i];
+                }
+
+            }
+        }
+
+        return null;
     }
     public bool IsVertical ()
     {
         return isVertical;
     }
 
-    public void setVertical (bool v)
+    public void setVerticalInit (bool v)
     {
         if (v == isVertical) return;
 
         isVertical = v;
+
         if (isVertical)
         {
             boxes[0].transform.localPosition = Vector3.up;
@@ -96,6 +119,93 @@ public class TriBox : MonoBehaviour
 
     }
 
+    public void setVertical (bool v)
+    {
+        if (v == isVertical) return;
+
+        isVertical = v;
+    }
+
+    public void Rotate (bool clockwise)
+    {
+        //after checkups 
+
+        Box center = getCenterBox ();
+        if (center == null)
+        {
+            print ("center null");
+            return;
+        }
+        List<UtilityTools.Directions> directionsCheckList = new List<UtilityTools.Directions> ();
+        Tile destination1 = (isVertical) ? center.getNeighbourTile (UtilityTools.Directions.left) : center.getNeighbourTile (UtilityTools.Directions.up);
+        Tile destination2 = (isVertical) ? center.getNeighbourTile (UtilityTools.Directions.right) : center.getNeighbourTile (UtilityTools.Directions.down);
+
+        // in relation to CenterBox
+        if (isVertical && clockwise)
+        {
+            //check upright right downleft left
+            directionsCheckList.Add (UtilityTools.Directions.upRight);
+            directionsCheckList.Add (UtilityTools.Directions.right);
+            directionsCheckList.Add (UtilityTools.Directions.downLeft);
+            directionsCheckList.Add (UtilityTools.Directions.left);
+
+        }
+        else if (isVertical && !clockwise)
+        {
+            //check upleft left downright right
+            directionsCheckList.Add (UtilityTools.Directions.upLeft);
+            directionsCheckList.Add (UtilityTools.Directions.left);
+            directionsCheckList.Add (UtilityTools.Directions.downRight);
+            directionsCheckList.Add (UtilityTools.Directions.right);
+
+        }
+        else if (!isVertical && clockwise)
+        {
+            //check upleft up downright down
+            directionsCheckList.Add (UtilityTools.Directions.upLeft);
+            directionsCheckList.Add (UtilityTools.Directions.up);
+            directionsCheckList.Add (UtilityTools.Directions.downRight);
+            directionsCheckList.Add (UtilityTools.Directions.down);
+        }
+        else
+        {
+            //check downleft down upRight up
+
+            directionsCheckList.Add (UtilityTools.Directions.downLeft);
+            directionsCheckList.Add (UtilityTools.Directions.down);
+            directionsCheckList.Add (UtilityTools.Directions.upRight);
+            directionsCheckList.Add (UtilityTools.Directions.up);
+        }
+
+        if (directionsCheckList.Any ())
+        {
+
+            if (!center.areMyNeighboursEmpty (directionsCheckList))
+            {
+                print ("something is blocking the rotation!");
+                return;
+            }
+        }
+
+        if (clockwise)
+        {
+            transform.DORotate (transform.eulerAngles + Vector3.back * 90, TheGrid.moveTime);
+
+        }
+        else
+        {
+            transform.DORotate (transform.eulerAngles + Vector3.forward * 90, TheGrid.moveTime);
+
+        }
+        
+        boxes.First().setTile (destination1);
+        boxes.Last().setTile (destination2);
+
+        isVertical = !isVertical;
+        rearrangeBoxesArray ();
+
+    }
+
     public void resetPosition ()
     {
         Vector3 pos = Vector3.zero;
@@ -106,10 +216,109 @@ public class TriBox : MonoBehaviour
         transform.position = pos;
 
     }
+
+    //rearrange arrrays so the left most or topmost is always at index 0
+    void rearrangeBoxesArray ()
+    {
+        /*
+
+        for(int i = 0; i < boxes.Length;i ++)
+        {
+            print("BEFORE My index is " + i + "and I'm " + boxes[i].name);
+        }
+        */
+        boxes = (!isVertical) ? boxes.OrderByDescending (x => x.GetPoint().x).ToArray() : boxes.OrderBy (y => y.GetPoint().y).ToArray();
+
+        for(int i = 0; i < boxes.Length;i ++)
+        {
+            boxes[i].name = "Box " + (i + 1) + boxes[i].GetPoint().print();
+            boxes[i].transform.SetSiblingIndex(i);
+        }
+
+        
+
+    }
+
+    public bool isSideEmpty (UtilityTools.Directions dir)
+    {
+
+        bool empty = true;
+        if (isVertical)
+        {
+
+            switch (dir)
+            {
+                case UtilityTools.Directions.up:
+
+                    break;
+
+                case UtilityTools.Directions.upRight:
+
+                    break;
+
+                case UtilityTools.Directions.right:
+
+                    break;
+
+                case UtilityTools.Directions.downRight:
+
+                    break;
+
+                case UtilityTools.Directions.down:
+
+                    break;
+
+                case UtilityTools.Directions.downLeft:
+
+                    break;
+
+                case UtilityTools.Directions.left:
+
+                    break;
+
+                case UtilityTools.Directions.upLeft:
+                    break;
+
+            }
+
+            foreach (Box b in boxes)
+            {
+                Tile neighbour = b.getNeighbourTile (UtilityTools.Directions.left);
+                if (neighbour == null) return false;
+
+                if (!neighbour.isEmpty ()) return false;
+            }
+        }
+        else
+        {
+            foreach (Box b in boxes)
+            {
+                Tile neighbour = b.getNeighbourTile (UtilityTools.Directions.right);
+                if (neighbour == null) return false;
+
+                if (!neighbour.isEmpty ()) return false;
+            }
+        }
+
+        return true;
+    }
+
+    public bool canRotate (UtilityTools.Directions dir)
+    {
+        return true;
+    }
     // Update is called once per frame
     void Update ()
     {
+        if (Input.GetKeyDown (KeyCode.Q))
+        {
+            Rotate (false);
+        }
 
+        if (Input.GetKeyDown (KeyCode.E))
+        {
+            Rotate (true);
+        }
     }
 
     public Box[] GetBoxes ()
