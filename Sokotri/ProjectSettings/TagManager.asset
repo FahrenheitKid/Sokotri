@@ -7,6 +7,8 @@ TagManager:
   - Grid
   - Tile
   - GridLayout
+  - Box
+  - TriBox
   layers:
   - Default
   - TransparentFX

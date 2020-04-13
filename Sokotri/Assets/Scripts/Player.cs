@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
@@ -8,7 +8,7 @@ public class Player : MonoBehaviour
     [SerializeField]
     TheGrid grid_ref;
     [SerializeField]
-    Point index;
+    Point index = Point.zero;
     [SerializeField]
     Point lastIndex;
     [SerializeField]
@@ -33,8 +33,29 @@ public class Player : MonoBehaviour
 
     }
 
+    public void Init (Point spawn, TheGrid grid = null)
+    {
+        if (grid_ref == null && grid != null) grid_ref = grid;
+
+        index = spawn;
+
+        SpawnAt (spawn);
+
+    }
+
     public void SpawnAt (Point p)
     {
+        if (grid_ref.isPointOutOfBounds (p))
+        {
+            return;
+        }
+
+        if (grid_ref.GetTile (p) == null)
+        {
+
+            return;
+        }
+
         if (!grid_ref.GetTile (p).isEmpty ()) return;
 
         index = p.Clone ();
@@ -49,22 +70,23 @@ public class Player : MonoBehaviour
 
             return false;
         }
-        else if(isMoving == false && checkDestination(dir)) //move only if not already moving and if destination is available
+        else if (isMoving == false && checkDestination (dir)) //move only if not already moving and if destination is available
         {
             //thren update player's and tile's new values/statuses
             isMoving = true;
-            Tile destination = grid_ref.GetTile(index.getNeighbourPoint (dir));
-            if(destination == null) return false;
+            Tile destination = grid_ref.GetTile (index.getNeighbourPoint (dir));
+            if (destination == null) return false;
             Vector3 destinationPos = destination.transform.position;
             destinationPos.z = -1;
-            transform.DOMove(destinationPos,moveTime).OnComplete(()=> {
-            isMoving = false;
-            tile.setStatus(Tile.Status.empty);
-            destination.setStatus(Tile.Status.player);
-            tile = destination;
-            lastIndex.Copy(index);
-            setIndex(destination.GetPoint().Clone());
-            
+            transform.DOMove (destinationPos, moveTime).OnComplete (() =>
+            {
+                isMoving = false;
+                tile.setStatus (Tile.Status.empty);
+                destination.setStatus (Tile.Status.player);
+                tile = destination;
+                lastIndex.Copy (index);
+                setIndex (destination.GetPoint ().Clone ());
+
             });
             return true;
         }
@@ -74,7 +96,6 @@ public class Player : MonoBehaviour
         }
 
     }
-
 
     bool checkDestination (UtilityTools.Directions dir)
     {
@@ -87,12 +108,11 @@ public class Player : MonoBehaviour
         else
         {
 
-            
             if (grid_ref.GetTile (index.getNeighbourPoint (dir)).isEmpty ())
             {
                 //print("destination is empty: " + index.getNeighbourPoint (dir).print());
                 return true;
-            } 
+            }
             else
             {
                 /*
@@ -136,10 +156,9 @@ public class Player : MonoBehaviour
 
     }
 
-
-    public void setIndex(Point p)
+    public void setIndex (Point p)
     {
-        index.Copy(p);
+        index.Copy (p);
 
     }
     public void resetPosition ()
