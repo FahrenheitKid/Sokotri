@@ -196,6 +196,64 @@ public class Box : MonoBehaviour
         return true;
     }
 
+    public bool isMyNeighbourThisKind(UtilityTools.Directions dir, Tile.Kind k)
+    {
+        if(getNeighbourTile(dir) == null) return false;
+
+        return (getNeighbourTile(dir).GetKind() == k);
+    }
+
+    public bool isMyNeighbourThisStatus(UtilityTools.Directions dir, Tile.Status s)
+    {
+        if(getNeighbourTile(dir) == null) return false;
+
+        return (getNeighbourTile(dir).GetStatus() == s);
+    }
+
+    public bool areMyNeighboursThisKind(List<UtilityTools.Directions> dirList, Tile.Kind k)
+    {
+         if (!dirList.Any ()) return false;
+         foreach(UtilityTools.Directions d in dirList)
+         {
+              if(isMyNeighbourThisKind(d,k) == false) return false;
+         }
+         return true;
+    }
+
+    public bool areMyNeighboursThisStatus(List<UtilityTools.Directions> dirList, Tile.Status s)
+    {
+         if (!dirList.Any ()) return false;
+         foreach(UtilityTools.Directions d in dirList)
+         {
+             
+             if(isMyNeighbourThisStatus(d,s) == false) return false;
+         }
+         return true;
+    }
+
+    public bool haveAnyNeighbourThisKind(List<UtilityTools.Directions> dirList, Tile.Kind k)
+    {
+         if (!dirList.Any ()) return false;
+
+         foreach(UtilityTools.Directions d in dirList)
+         {
+             if(isMyNeighbourThisKind(d,k) == true) return true;
+         }
+
+         return false;
+    }
+
+    public bool haveAnyNeighbourThisStatus(List<UtilityTools.Directions> dirList, Tile.Status s)
+    {
+         if (!dirList.Any ()) return false;
+
+        foreach(UtilityTools.Directions d in dirList)
+         {
+             if(isMyNeighbourThisStatus(d,s) == true) return true;
+         }
+         return false;
+    }
+
     public Point GetPoint ()
     {
         return index;
@@ -451,7 +509,7 @@ public class Box : MonoBehaviour
         bool hasQuint = (rollQuintessentialOnlyOnce && Random.value < typeWeights[(int) Box.Element.quintessential] / 100) ? true : false;
         int quintIndex = Random.Range (0, quantity);
 
-        bool same = false;
+        int sameCount = 0;
         for (int i = 0; i < quantity; i++)
         {
             if (i == quintIndex && hasQuint)
@@ -464,30 +522,31 @@ public class Box : MonoBehaviour
                 result[i] = (Box.Element) Random.Range (0, System.Enum.GetNames (typeof (Box.Element)).Length - 1);
             }
 
-            if (i > 0)
+            if (i > 1 && i < quantity - 1)
             {
-                if (result[i - 1] == result[i])
+                if (result[i - 1] == result[i] || result[i - 1] == Box.Element.quintessential)
                 {
-                    if (!same)
-                    {
-                        same = true;
-                    }
-                    else
-                    {
-                        int loops = 0;
-                        while (result[i - 1] == result[i] && loops < 100)
-                        {
-                            result[i] = (Box.Element) Random.Range (0, System.Enum.GetNames (typeof (Box.Element)).Length - 1);
-                            loops++;
-                        }
-                        same = false;
+                    sameCount++;
+                }
+                if (result[i - 2] == result[i] || result[i - 2] == Box.Element.quintessential)
+                {
+                    sameCount++;
+                }
 
+                if (sameCount >= 2)
+                {
+                    int loops = 0;
+                    while (result[i - 1] == result[i] && loops < 100)
+                    {
+                        result[i] = (Box.Element) Random.Range (0, System.Enum.GetNames (typeof (Box.Element)).Length - 1);
+                        loops++;
                     }
+                    sameCount = 0;
 
                 }
                 else
                 {
-                    same = false;
+                    sameCount = 0;
                 }
             }
         }

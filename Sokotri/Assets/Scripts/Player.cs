@@ -86,13 +86,16 @@ public class Player : MonoBehaviour
             transform.DOMove (destinationPos, TheGrid.moveTime).OnComplete (() =>
             {
                 isMoving = false;
+                
+
+            });
+
                 tile.setStatus (Tile.Status.empty);
                 destination.setStatus (Tile.Status.player);
                 tile = destination;
                 lastIndex.Copy (index);
                 setIndex (destination.GetPoint ().Clone ());
-
-            });
+                
             return true;
         }
         else

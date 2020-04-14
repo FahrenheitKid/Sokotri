@@ -46,6 +46,30 @@ static public class UtilityTools
         upLeft
     }
 
+    public static Directions[] allDirections = {
+        Directions.up,
+        Directions.upRight,
+        Directions.right,
+        Directions.downRight,
+        Directions.down,
+        Directions.downLeft,
+        Directions.left,
+        Directions.upLeft
+    };
+    public static Directions[] axials = {
+        Directions.up,
+        Directions.right,
+        Directions.down,
+        Directions.left
+    };
+    public static Directions[] diagonals = {
+
+        Directions.upRight,
+        Directions.downRight,
+        Directions.downLeft,
+        Directions.upLeft
+    };
+
     public static Directions OppositeDirection (Directions dir, bool diagonoalsXYInverted = true)
     {
         switch (dir)
