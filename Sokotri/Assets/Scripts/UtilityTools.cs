@@ -44,9 +44,97 @@ static public class UtilityTools
         downLeft,
         left,
         upLeft
-
     }
 
+    public static Directions OppositeDirection (Directions dir, bool diagonoalsXYInverted = true)
+    {
+        switch (dir)
+        {
+            case UtilityTools.Directions.up:
+                return Directions.down;
+                break;
+
+            case UtilityTools.Directions.upRight:
+
+                return (diagonoalsXYInverted) ? Directions.downLeft : Directions.downRight;
+
+                break;
+
+            case UtilityTools.Directions.right:
+                return Directions.left;
+                break;
+
+            case UtilityTools.Directions.downRight:
+                return (diagonoalsXYInverted) ? Directions.upLeft : Directions.upRight;
+                break;
+
+            case UtilityTools.Directions.down:
+                return Directions.up;
+                break;
+
+            case UtilityTools.Directions.downLeft:
+                return (diagonoalsXYInverted) ? Directions.upRight : Directions.upLeft;
+                break;
+
+            case UtilityTools.Directions.left:
+                return Directions.right;
+                break;
+
+            case UtilityTools.Directions.upLeft:
+                return (diagonoalsXYInverted) ? Directions.downRight : Directions.downLeft;
+                break;
+
+            default:
+                return Directions.right;
+                break;
+
+        }
+    }
+
+    public static Vector3 getDirectionVector (UtilityTools.Directions dir)
+    {
+        switch (dir)
+        {
+            case UtilityTools.Directions.up:
+                return Vector3.up;
+                break;
+
+            case UtilityTools.Directions.upRight:
+
+                return (Vector3.up + Vector3.right).normalized;
+
+                break;
+
+            case UtilityTools.Directions.right:
+                return Vector3.right;
+                break;
+
+            case UtilityTools.Directions.downRight:
+                return (Vector3.down + Vector3.right).normalized;
+                break;
+
+            case UtilityTools.Directions.down:
+                return Vector3.down;
+                break;
+
+            case UtilityTools.Directions.downLeft:
+                return (Vector3.down + Vector3.left).normalized;
+                break;
+
+            case UtilityTools.Directions.left:
+                return Vector3.left;
+                break;
+
+            case UtilityTools.Directions.upLeft:
+                return (Vector3.up + Vector3.left).normalized;
+                break;
+
+            default:
+                return Vector3.zero;
+                break;
+
+        }
+    }
     public static int GetRandomWeightedIndex (float[] weights)
     {
         if (weights == null || weights.Length == 0) return -1;

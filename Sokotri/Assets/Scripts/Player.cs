@@ -76,9 +76,9 @@ public class Player : MonoBehaviour
             Tile destination = grid_ref.GetTile (index.getNeighbourPoint (dir));
             if (destination == null) return false;
 
-            if(destination.GetStatus() == Tile.Status.box) // need to move or rotate tribox
+            if (destination.GetStatus () == Tile.Status.box) // need to move or rotate tribox
             {
-                destination.GetBox().Push(dir);
+                destination.GetBox ().Push (dir);
             }
 
             Vector3 destinationPos = destination.transform.position;
@@ -119,115 +119,183 @@ public class Player : MonoBehaviour
                 //print("destination is empty: " + index.getNeighbourPoint (dir).print());
                 return true;
             }
-            else if (destination.GetStatus () == Tile.Status.box && destination.GetBox ().isInTribox ()) //if has a box part of tribox is eligible to Move or Rotate
+            else if (destination.GetStatus () == Tile.Status.box && destination.GetBox ().isInTribox ()) //if destination has a box part of tribox is eligible to Move or Rotate
             {
                 TriBox tri = destination.GetBox ().GetTriBox ();
 
+                /*
                 if (destination.GetBox ().isCenterBox ())
                 {
                     print("tried to move center");
                     //need to check if can move, then move
+
+
                     return false;
                 }
-                else
+                */
+
+                //check if can rotate, then rotate (check already inside rotate)
+                //or if can move from below edges
+
+                bool clockw = true;
+                switch (dir)
                 {
-                    //check if can rotate, then rotate (check already inside rotate)
-                    //or if can move from below edges
-
-                    bool clockw = true;
-                    switch (dir)
-                    {
-                        case UtilityTools.Directions.up:
-                            if (tri.IsVertical ())
+                    case UtilityTools.Directions.up:
+                        if (tri.IsVertical ())
+                        {
+                            //if moving from the lowest box, need to move up
+                            if (destination.GetBox ().isDirectionMost (UtilityTools.OppositeDirection (dir)))
                             {
-                                //need to move up
+                                return tri.canMove (dir);
+                            }
+                            else
+                            {
+                                return false;
+                            }
+
+                        }
+                        else
+                        {
+                            if (destination.GetBox ().isCenterBox ())
+                            {
+                                return tri.canMove (dir);
                             }
                             else
                             {
                                 //try to rotate
-                                print("trying to UP, colliding box " + destination.GetBox() + " vs actual First" + tri.GetBoxes ().First ());
-                                clockw = (tri.GetBoxes ().First () == destination.GetBox());
+                                //print("trying to UP, colliding box " + destination.GetBox() + " vs actual First" + tri.GetBoxes ().First ());
+                                clockw = (destination.GetBox ().isDirectionMost (UtilityTools.Directions.left));
                                 return tri.canRotate (clockw);
                             }
 
-                            break;
+                        }
 
-                        case UtilityTools.Directions.upRight:
+                        break;
 
-                            break;
+                    case UtilityTools.Directions.upRight:
 
-                        case UtilityTools.Directions.right:
+                        break;
 
-                            if (!tri.IsVertical ())
+                    case UtilityTools.Directions.right:
+
+                        if (!tri.IsVertical ())
+                        {
+                            if (destination.GetBox ().isDirectionMost (UtilityTools.OppositeDirection (dir)))
                             {
-                                //need to move right
+                                return tri.canMove (dir);
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            if (destination.GetBox ().isCenterBox ())
+                            {
+                                return tri.canMove (dir);
                             }
                             else
                             {
                                 //try to rotate
-                                
-                                //try to rotate
-                                print("trying to Right, colliding box " + destination.GetBox() + " vs actual First" + tri.GetBoxes ().First ());
-                                clockw = (tri.GetBoxes ().First () == destination.GetBox());
+                                //print("trying to Right, colliding box " + destination.GetBox() + " vs actual First" + tri.GetBoxes ().First ());
+                                clockw = (destination.GetBox ().isDirectionMost (UtilityTools.Directions.up));
                                 return tri.canRotate (clockw);
                             }
 
-                            break;
+                        }
 
-                        case UtilityTools.Directions.downRight:
+                        break;
 
-                            break;
+                    case UtilityTools.Directions.downRight:
 
-                        case UtilityTools.Directions.down:
-                            if (tri.IsVertical ())
+                        break;
+
+                    case UtilityTools.Directions.down:
+                        if (tri.IsVertical ())
+                        {
+                            //need to move down
+                            if (destination.GetBox ().isDirectionMost (UtilityTools.OppositeDirection (dir)))
                             {
-                                //need to move down
+                                return tri.canMove (dir);
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                        else
+                        {
+
+                            if (destination.GetBox ().isCenterBox ())
+                            {
+                                return tri.canMove (dir);
                             }
                             else
                             {
                                 //try to rotate
-                                print("trying to DOWN, colliding box " + destination.GetBox() + " vs actual last" + tri.GetBoxes ().Last ());
-                                clockw = (tri.GetBoxes ().Last () == destination.GetBox());
+                                //print("trying to DOWN, colliding box " + destination.GetBox() + " vs actual last" + tri.GetBoxes ().Last ());
+                                clockw = (destination.GetBox ().isDirectionMost (UtilityTools.Directions.right));
                                 return tri.canRotate (clockw);
+
                             }
 
-                            break;
+                        }
 
-                        case UtilityTools.Directions.downLeft:
-                            break;
+                        break;
 
-                        case UtilityTools.Directions.left:
+                    case UtilityTools.Directions.downLeft:
+                        break;
 
-                            if (!tri.IsVertical ())
+                    case UtilityTools.Directions.left:
+
+                        if (!tri.IsVertical ())
+                        {
+                            //need to move left
+                            if (destination.GetBox ().isDirectionMost (UtilityTools.OppositeDirection (dir)))
                             {
-                                //need to move left
+                                return tri.canMove (dir);
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                        else
+                        {
+
+                            if (destination.GetBox ().isCenterBox ())
+                            {
+                                return tri.canMove (dir);
                             }
                             else
                             {
                                 //try to rotate
-                                print("trying to LEFT, colliding box " + destination.GetBox() + " vs actual last" + tri.GetBoxes ().Last ());
-                                clockw = (tri.GetBoxes ().Last () == destination.GetBox());
+                                //print("trying to LEFT, colliding box " + destination.GetBox() + " vs actual last" + tri.GetBoxes ().Last ());
+                                clockw = (destination.GetBox ().isDirectionMost (UtilityTools.Directions.down));
                                 return tri.canRotate (clockw);
                             }
 
-                            break;
+                        }
 
-                        case UtilityTools.Directions.upLeft:
-                            break;
+                        break;
 
-                        default:
-                            return false;
+                    case UtilityTools.Directions.upLeft:
+                        break;
 
-                    }
-                    
-                    return false;
+                    default:
+                        return false;
+
                 }
+
+                return false;
+
             }
             else
             {
                 return false;
             }
-            
+
         }
 
     }

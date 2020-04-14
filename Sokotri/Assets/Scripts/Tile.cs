@@ -75,7 +75,7 @@ public class Tile : MonoBehaviour
         return status;
     }
 
-    public Box GetBox()
+    public Box GetBox ()
     {
         return box;
     }

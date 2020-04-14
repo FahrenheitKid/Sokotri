@@ -132,47 +132,44 @@ public class TriBox : MonoBehaviour
     public void Rotate (bool clockwise)
     {
         //after checkups 
-         Box center = getCenterBox ();
+        Box center = getCenterBox ();
         if (center == null || isRotating || isMoving)
         {
             print ("center null");
             return;
         }
 
-        if(!canRotate(clockwise)) return;
-
-        
+        if (!canRotate (clockwise)) return;
 
         Tile destination1 = null;
-          Tile destination2 = null;
-        if(isVertical)
+        Tile destination2 = null;
+        if (isVertical)
         {
             destination1 = (clockwise) ? center.getNeighbourTile (UtilityTools.Directions.right) : center.getNeighbourTile (UtilityTools.Directions.left);
             destination2 = (clockwise) ? center.getNeighbourTile (UtilityTools.Directions.left) : center.getNeighbourTile (UtilityTools.Directions.right);
         }
         else
         {
-             destination1 = (clockwise) ? center.getNeighbourTile (UtilityTools.Directions.up) : center.getNeighbourTile (UtilityTools.Directions.down);
-             destination2 = (clockwise) ? center.getNeighbourTile (UtilityTools.Directions.down) : center.getNeighbourTile (UtilityTools.Directions.up);
+            destination1 = (clockwise) ? center.getNeighbourTile (UtilityTools.Directions.up) : center.getNeighbourTile (UtilityTools.Directions.down);
+            destination2 = (clockwise) ? center.getNeighbourTile (UtilityTools.Directions.down) : center.getNeighbourTile (UtilityTools.Directions.up);
         }
-      
 
         if (clockwise)
         {
             isRotating = true;
-            transform.DORotate (transform.eulerAngles + Vector3.back * 90, TheGrid.moveTime).OnComplete(() => {isRotating = false;});
+            transform.DORotate (transform.eulerAngles + Vector3.back * 90, TheGrid.moveTime).OnComplete (() => { isRotating = false; });
 
         }
         else
         {
-            isRotating =true;
-            transform.DORotate (transform.eulerAngles + Vector3.forward * 90, TheGrid.moveTime).OnComplete(() => {isRotating = false;});
+            isRotating = true;
+            transform.DORotate (transform.eulerAngles + Vector3.forward * 90, TheGrid.moveTime).OnComplete (() => { isRotating = false; });
 
         }
-        
+
         //print("first box: " + boxes.First() + boxes.First().GetPoint().print() + " is moving to position" + destination1.GetPoint().Clone().print());
-        boxes.First().setTile (destination1);
-        boxes.Last().setTile (destination2);
+        boxes.First ().setTile (destination1);
+        boxes.Last ().setTile (destination2);
 
         isVertical = !isVertical;
         rearrangeBoxesArray ();
@@ -191,7 +188,7 @@ public class TriBox : MonoBehaviour
     }
 
     //rearrange arrrays so the left most or topmost is always at index 0
-    void rearrangeBoxesArray ()
+    public void rearrangeBoxesArray ()
     {
         /*
 
@@ -200,102 +197,291 @@ public class TriBox : MonoBehaviour
             print("BEFORE My index is " + i + "and I'm " + boxes[i].name);
         }
         */
-        boxes = (!isVertical) ? boxes.OrderBy (bi => bi.GetPoint().x).ToArray() : boxes.OrderBy (bi => bi.GetPoint().y).ToArray();
+        boxes = (!isVertical) ? boxes.OrderBy (bi => bi.GetPoint ().x).ToArray () : boxes.OrderBy (bi => bi.GetPoint ().y).ToArray ();
 
-        for(int i = 0; i < boxes.Length;i ++)
+        for (int i = 0; i < boxes.Length; i++)
         {
-            boxes[i].name = "Box " + (i + 1) + boxes[i].GetPoint().print();
-            boxes[i].transform.SetSiblingIndex(i);
-            boxes[i].GetComponent<SpriteRenderer>().color = Color.white;
-            
+            boxes[i].name = "Box " + (i + 1) + boxes[i].GetPoint ().print ();
+            boxes[i].transform.SetSiblingIndex (i);
+            boxes[i].GetComponent<SpriteRenderer> ().color = Color.white;
+
         }
         //boxes.First().GetComponent<SpriteRenderer>().color = Color.green;
         //boxes.Last().GetComponent<SpriteRenderer>().color = Color.red;
 
-        if(!isVertical)
+#if TRIBOX_DEBUG
+        if (!isVertical)
         {
             //leftmost
-             boxes.First(bo=> bo.GetPoint().x == boxes.Min(bi => bi.GetPoint().x)).GetComponent<SpriteRenderer>().color = Color.green;
+            boxes.First (bo => bo.GetPoint ().x == boxes.Min (bi => bi.GetPoint ().x)).GetComponent<SpriteRenderer> ().color = Color.green;
 
-             boxes.First(bo=> bo.GetPoint().x == boxes.Max(bi => bi.GetPoint().x)).GetComponent<SpriteRenderer>().color = Color.red;
-
+            boxes.First (bo => bo.GetPoint ().x == boxes.Max (bi => bi.GetPoint ().x)).GetComponent<SpriteRenderer> ().color = Color.red;
 
         }
         else
         {
-            boxes.First(bo=> bo.GetPoint().y == boxes.Min(bi => bi.GetPoint().y)).GetComponent<SpriteRenderer>().color = Color.green;
-            boxes.First(bo=> bo.GetPoint().y == boxes.Max(bi => bi.GetPoint().y)).GetComponent<SpriteRenderer>().color = Color.red;
+            boxes.First (bo => bo.GetPoint ().y == boxes.Min (bi => bi.GetPoint ().y)).GetComponent<SpriteRenderer> ().color = Color.green;
+            boxes.First (bo => bo.GetPoint ().y == boxes.Max (bi => bi.GetPoint ().y)).GetComponent<SpriteRenderer> ().color = Color.red;
         }
 
-        
+#endif
 
     }
 
     public bool isSideEmpty (UtilityTools.Directions dir)
     {
 
-        bool empty = true;
-        if (isVertical)
+        switch (dir)
         {
+            case UtilityTools.Directions.up:
+                if (isVertical)
+                {
+                    if (getDirectionMostBox (dir).getNeighbourTile (dir) == null) return false;
 
-            switch (dir)
+                    return getDirectionMostBox (dir).getNeighbourTile (dir).isEmpty ();
+                }
+                else
+                {
+                    foreach (Box b in boxes)
+                    {
+                        Tile neighbour = b.getNeighbourTile (dir);
+                        if (neighbour == null) return false;
+
+                        if (!neighbour.isEmpty ()) return false;
+
+                    }
+                    return true;
+                }
+
+                break;
+
+            case UtilityTools.Directions.right:
+                if (!isVertical)
+                {
+                    if (getDirectionMostBox (dir).getNeighbourTile (dir) == null) return false;
+
+                    return getDirectionMostBox (dir).getNeighbourTile (dir).isEmpty ();
+                }
+                else
+                {
+                    foreach (Box b in boxes)
+                    {
+                        Tile neighbour = b.getNeighbourTile (dir);
+                        if (neighbour == null) return false;
+
+                        if (!neighbour.isEmpty ()) return false;
+
+                    }
+                    return true;
+                }
+
+                break;
+
+            case UtilityTools.Directions.down:
+                if (isVertical)
+                {
+                    if (getDirectionMostBox (dir).getNeighbourTile (dir) == null) return false;
+
+                    return getDirectionMostBox (dir).getNeighbourTile (dir).isEmpty ();
+                }
+                else
+                {
+                    foreach (Box b in boxes)
+                    {
+                        Tile neighbour = b.getNeighbourTile (dir);
+                        if (neighbour == null) return false;
+
+                        if (!neighbour.isEmpty ()) return false;
+
+                    }
+                    return true;
+                }
+
+                break;
+
+            case UtilityTools.Directions.left:
+                if (!isVertical)
+                {
+                    if (getDirectionMostBox (dir).getNeighbourTile (dir) == null) return false;
+
+                    return getDirectionMostBox (dir).getNeighbourTile (dir).isEmpty ();
+                }
+                else
+                {
+                    foreach (Box b in boxes)
+                    {
+                        Tile neighbour = b.getNeighbourTile (dir);
+                        if (neighbour == null) return false;
+
+                        if (!neighbour.isEmpty ()) return false;
+
+                    }
+                    return true;
+                }
+
+                break;
+
+            default:
+                return false;
+                break;
+
+        }
+
+    }
+
+    public bool canMove (UtilityTools.Directions dir)
+    {
+        return isSideEmpty (dir);
+    }
+
+    public void Move (UtilityTools.Directions dir)
+    {
+        //after checkups 
+
+        if (isRotating || isMoving)
+        {
+            print ("already moving/rotating");
+            return;
+        }
+
+        if (!canMove (dir)) return;
+
+        Tile[] destinations = { null, null, null };
+
+        bool shouldEmptyPreviousTile = false;
+
+        switch (dir)
+        {
+            case UtilityTools.Directions.up:
+                if (isVertical)
+                {
+                    destinations[0] = getDirectionMostBox (dir).getNeighbourTile (dir); // the uppermost is gonna go to his up neighbour
+                    destinations[1] = getDirectionMostBox (dir).GetTile (); // the center is gonna go to current uppermost
+                    destinations[2] = getCenterBox ().GetTile (); // lowest is going to go to center
+
+                    shouldEmptyPreviousTile = true;
+
+                }
+                else
+                {
+                    for (int i = 0; i < destinations.Length && i < boxes.Length; i++)
+                    {
+                        destinations[i] = boxes[i].getNeighbourTile (dir);
+                    }
+                }
+
+                break;
+
+            case UtilityTools.Directions.right:
+                if (!isVertical)
+                {
+                    destinations[0] = getCenterBox ().GetTile (); // leftmost is going to go to center
+                    destinations[1] = getDirectionMostBox (dir).GetTile (); // the center is gonna go to current rightmost
+                    destinations[2] = getDirectionMostBox (dir).getNeighbourTile (dir); // the rightmost is gonna go to his right neighbour
+                    shouldEmptyPreviousTile = true;
+
+                }
+                else
+                {
+                    for (int i = 0; i < destinations.Length && i < boxes.Length; i++)
+                    {
+                        destinations[i] = boxes[i].getNeighbourTile (dir);
+                    }
+                }
+
+                break;
+
+            case UtilityTools.Directions.down:
+                if (isVertical)
+                {
+                    destinations[0] = getCenterBox ().GetTile (); // highest is going to go to center
+                    destinations[1] = getDirectionMostBox (dir).GetTile (); // the center is gonna go to current downmost
+                    destinations[2] = getDirectionMostBox (dir).getNeighbourTile (dir); // the downmost is gonna go to his down neighbour
+                    shouldEmptyPreviousTile = true;
+
+                }
+                else
+                {
+                    for (int i = 0; i < destinations.Length && i < boxes.Length; i++)
+                    {
+                        destinations[i] = boxes[i].getNeighbourTile (dir);
+                    }
+                }
+
+                break;
+
+            case UtilityTools.Directions.left:
+                if (!isVertical)
+                {
+                    destinations[0] = getDirectionMostBox (dir).getNeighbourTile (dir); // the leftmost is gonna go to his left neighbour
+                    destinations[1] = getDirectionMostBox (dir).GetTile (); // the center is gonna go to current leftmost
+                    destinations[2] = getCenterBox ().GetTile (); // rightmost is going to go to center
+                    shouldEmptyPreviousTile = true;
+
+                }
+                else
+                {
+                    for (int i = 0; i < destinations.Length && i < boxes.Length; i++)
+                    {
+                        destinations[i] = boxes[i].getNeighbourTile (dir);
+                    }
+                }
+
+                break;
+
+            default:
+                return;
+                break;
+
+        }
+
+        // all destinations are ok
+        if (!System.Array.FindAll (destinations, x => x == null).Any ())
+        {
+            isMoving = true;
+
+            transform.DOMove (transform.position + UtilityTools.getDirectionVector (dir) * 1, TheGrid.moveTime).OnComplete (() => { isMoving = false; });
+
+            for (int i = 0; i < destinations.Length && i < boxes.Length; i++)
             {
-                case UtilityTools.Directions.up:
+                //move sprites
 
-                    break;
-
-                case UtilityTools.Directions.upRight:
-
-                    break;
-
-                case UtilityTools.Directions.right:
-
-                    break;
-
-                case UtilityTools.Directions.downRight:
-
-                    break;
-
-                case UtilityTools.Directions.down:
-
-                    break;
-
-                case UtilityTools.Directions.downLeft:
-
-                    break;
-
-                case UtilityTools.Directions.left:
-
-                    break;
-
-                case UtilityTools.Directions.upLeft:
-                    break;
+                //update tiles  isVertical && dir == UtilityTools.Directions.down && i > 0
+                //fix when moving down it should not set previous tiles as empties
+                if (shouldEmptyPreviousTile)
+                {
+                    boxes[i].setTile (destinations[i], Tile.Status.box);
+                }
+                else
+                {
+                    boxes[i].setTile (destinations[i]);
+                }
 
             }
 
-            foreach (Box b in boxes)
-            {
-                Tile neighbour = b.getNeighbourTile (UtilityTools.Directions.left);
-                if (neighbour == null) return false;
-
-                if (!neighbour.isEmpty ()) return false;
-            }
         }
         else
         {
-            foreach (Box b in boxes)
-            {
-                Tile neighbour = b.getNeighbourTile (UtilityTools.Directions.right);
-                if (neighbour == null) return false;
-
-                if (!neighbour.isEmpty ()) return false;
-            }
+            return;
         }
 
-        return true;
+        //print("first box: " + boxes.First() + boxes.First().GetPoint().print() + " is moving to position" + destination1.GetPoint().Clone().print());
+        rearrangeBoxesArray ();
+
     }
 
-    public bool canRotate(bool clockwise)
+    public Box getDirectionMostBox (UtilityTools.Directions dir)
+    {
+        foreach (Box b in boxes)
+        {
+            if (b.isDirectionMost (dir)) return b;
+        }
+
+        return null;
+
+    }
+
+    public bool canRotate (bool clockwise)
     {
         Box center = getCenterBox ();
         if (center == null || isRotating || isMoving)

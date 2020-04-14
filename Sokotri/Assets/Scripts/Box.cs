@@ -45,8 +45,8 @@ public class Box : MonoBehaviour
     {
         if (spriteRenderer == null)
             spriteRenderer = GetComponent<SpriteRenderer> ();
-            if (grid_ref == null)
-             grid_ref = GameObject.FindGameObjectWithTag ("Grid").GetComponent<TheGrid> ();
+        if (grid_ref == null)
+            grid_ref = GameObject.FindGameObjectWithTag ("Grid").GetComponent<TheGrid> ();
 
     }
 
@@ -60,73 +60,138 @@ public class Box : MonoBehaviour
     {
         if (tribox == null) return false;
 
-        
-
-        
-        return (this != tribox.GetBoxes().First() && this != tribox.GetBoxes().Last());
+        return (this != tribox.GetBoxes ().First () && this != tribox.GetBoxes ().Last ());
 
     }
 
-    public bool isBoxAtEdge(UtilityTools.Directions dir)
+    public bool isBoxAtEdge (UtilityTools.Directions dir)
     {
-        if(tribox == null || isCenterBox()) return false;
 
-        return (this == tribox.GetBoxes().First() || this == tribox.GetBoxes().Last());
+        if (tribox == null || isCenterBox ()) return false;
+
+        //tribox.rearrangeBoxesArray();
+
+        return (this == tribox.GetBoxes ().First () || this == tribox.GetBoxes ().Last ());
+
+    }
+    //check if this box is at the direction-most position of tribox 
+    public bool isDirectionMost (UtilityTools.Directions dir)
+    {
+        if (!isBoxAtEdge (dir)) return false;
+
+        //tribox.rearrangeBoxesArray();
+
+        switch (dir)
+        {
+            case UtilityTools.Directions.up:
+                if (tribox.IsVertical ())
+                {
+                    return this == tribox.GetBoxes ().First ();
+                }
+                else
+                {
+
+                    return false;
+                }
+
+                break;
+
+            case UtilityTools.Directions.right:
+                if (!tribox.IsVertical ())
+                {
+                    return this == tribox.GetBoxes ().Last ();
+                }
+                else
+                {
+                    return false;
+                }
+
+                break;
+
+            case UtilityTools.Directions.down:
+                if (tribox.IsVertical ())
+                {
+                    return this == tribox.GetBoxes ().Last ();
+                }
+                else
+                {
+                    return false;
+                }
+
+                break;
+
+            case UtilityTools.Directions.left:
+                if (!tribox.IsVertical ())
+                {
+                    return this == tribox.GetBoxes ().First ();
+                }
+                else
+                {
+                    return false;
+                }
+
+                break;
+
+            default:
+                return false;
+                break;
+
+        }
 
     }
 
     public bool isMyNeighbour (Box b, bool diagonals)
     {
-        if(b == null) return false;
+        if (b == null) return false;
         return index.isMyNeighbour (b.GetPoint ().Clone (), diagonals);
 
     }
 
     public bool isMyNeighbour (Point p, bool diagonals)
     {
-        if(grid_ref.isPointOutOfBounds(p.Clone())) return false;
+        if (grid_ref.isPointOutOfBounds (p.Clone ())) return false;
 
         return index.isMyNeighbour (p.Clone (), diagonals);
 
     }
 
-    public bool areMyNeighbours(List<Box> boxList, bool diagonals)
+    public bool areMyNeighbours (List<Box> boxList, bool diagonals)
     {
-        if(!boxList.Any() || boxList.FindAll(x => x == null).Any()) return false;
+        if (!boxList.Any () || boxList.FindAll (x => x == null).Any ()) return false;
 
-        foreach(Box b in boxList)
+        foreach (Box b in boxList)
         {
-            if(!isMyNeighbour(b, diagonals)) return false;
+            if (!isMyNeighbour (b, diagonals)) return false;
         }
 
         return true;
     }
 
-    public bool areMyNeighbours(List<Point> pointList, bool diagonals)
+    public bool areMyNeighbours (List<Point> pointList, bool diagonals)
     {
-        if(!pointList.Any() || pointList.FindAll(x => x == null).Any() ||
-        pointList.FindAll(x => grid_ref.isPointOutOfBounds(x.Clone())).Any()) return false;
+        if (!pointList.Any () || pointList.FindAll (x => x == null).Any () ||
+            pointList.FindAll (x => grid_ref.isPointOutOfBounds (x.Clone ())).Any ()) return false;
 
-        foreach(Point p in pointList)
+        foreach (Point p in pointList)
         {
-            if(!isMyNeighbour(p,diagonals)) return false;
+            if (!isMyNeighbour (p, diagonals)) return false;
         }
 
         return true;
     }
-    public bool isMyNeighbourEmpty(UtilityTools.Directions dir)
+    public bool isMyNeighbourEmpty (UtilityTools.Directions dir)
     {
-        Tile neighbour = getNeighbourTile(dir);
-        return (neighbour == null) ? false : neighbour.isEmpty();
+        Tile neighbour = getNeighbourTile (dir);
+        return (neighbour == null) ? false : neighbour.isEmpty ();
     }
 
-    public bool areMyNeighboursEmpty(List<UtilityTools.Directions> dirList)
+    public bool areMyNeighboursEmpty (List<UtilityTools.Directions> dirList)
     {
-         if(!dirList.Any()) return false;
+        if (!dirList.Any ()) return false;
 
-        foreach(UtilityTools.Directions d in dirList)
+        foreach (UtilityTools.Directions d in dirList)
         {
-            if(!isMyNeighbourEmpty(d)) return false;
+            if (!isMyNeighbourEmpty (d)) return false;
         }
         return true;
     }
@@ -156,16 +221,23 @@ public class Box : MonoBehaviour
     {
         if (t == tile) return;
 
+        if (oldTileNewStatus == Tile.Status.empty && tile != null)
+            tile.setStatus (oldTileNewStatus);
 
-        if(oldTileNewStatus == Tile.Status.empty && tile != null)
-        tile.setStatus(oldTileNewStatus);
-
-        
-
-        if (t.GetStatus () != Tile.Status.box) t.setStatus (Tile.Status.box, this);
-        index = t.GetPoint().Clone();
+        t.setStatus (Tile.Status.box, this);
+        index = t.GetPoint ().Clone ();
 
         tile = t;
+
+        if (t.GetStatus () == Tile.Status.empty)
+        {
+            print ("teste");
+        }
+    }
+
+    public Tile GetTile ()
+    {
+        return tile;
     }
 
     public Element GetElement ()
@@ -173,125 +245,192 @@ public class Box : MonoBehaviour
         return element;
     }
 
-    public bool isInTribox()
+    public bool isInTribox ()
     {
         return (tribox != null);
     }
 
-    public TriBox GetTriBox()
+    public TriBox GetTriBox ()
     {
         return tribox;
     }
 
-    public void Push(UtilityTools.Directions dir)
+    public void Push (UtilityTools.Directions dir)
     {
-        if(!isInTribox()) return;
-        
-         
-        if(isCenterBox())
-        {
-            //move
+        if (!isInTribox ()) return;
 
-             return;
-        }
-        else
+        bool clockw = true;
+        TriBox tri = tribox;
+        switch (dir)
         {
-              bool clockw = true;
-              TriBox tri = tribox;
-                    switch (dir)
+            case UtilityTools.Directions.up:
+                if (tri.IsVertical ())
+                {
+                    //if im the lowest box
+                    if (isDirectionMost (UtilityTools.OppositeDirection (dir)))
                     {
-                        case UtilityTools.Directions.up:
-                            if (tri.IsVertical ())
-                            {
-                                //need to move up
-                            }
-                            else
-                            {
-                                //try to rotate
-
-                                clockw = (tri.GetBoxes ().First () == this);
-                                tribox.Rotate(clockw);
-                                 return;
-                            }
-
-                            break;
-
-                        case UtilityTools.Directions.upRight:
-
-                            break;
-
-                        case UtilityTools.Directions.right:
-
-                            if (!tri.IsVertical ())
-                            {
-                                //need to move right
-                            }
-                            else
-                            {
-                                //try to rotate
-
-                                clockw = (tri.GetBoxes ().First () == this);
-                                tri.Rotate (clockw);
-                                 return;
-                            }
-
-                            break;
-
-                        case UtilityTools.Directions.downRight:
-
-                            break;
-
-                        case UtilityTools.Directions.down:
-                            if (tri.IsVertical ())
-                            {
-                                //need to move down
-                            }
-                            else
-                            {
-                                //try to rotate
-
-                                clockw = (tri.GetBoxes ().Last () == this);
-                                tri.Rotate (clockw);
-                                 return;
-                            }
-
-                            break;
-
-                        case UtilityTools.Directions.downLeft:
-                            break;
-
-                        case UtilityTools.Directions.left:
-
-                            if (!tri.IsVertical ())
-                            {
-                                //need to move left
-                            }
-                            else
-                            {
-                                //try to rotate
-
-                                clockw = (tri.GetBoxes ().Last () == this);
-                                tri.Rotate (clockw);
-                                return;
-                            }
-
-                            break;
-
-                        case UtilityTools.Directions.upLeft:
-                            break;
-
-                        default:
-                            return;
-
+                        //if the upside is empty
+                        if (tri.isSideEmpty (dir))
+                        {
+                            tribox.Move (dir);
+                        }
                     }
+                }
+                else
+                {
+
+                    if (isCenterBox ())
+                    {
+                        //try to move
+                        if (tri.isSideEmpty (dir))
+                        {
+                            tribox.Move (dir);
+                        }
+                    }
+                    else
+                    {
+                        //try to rotate
+                        clockw = (isDirectionMost (UtilityTools.Directions.left));
+                        tribox.Rotate (clockw);
+                        return;
+                    }
+
+                }
+
+                break;
+
+            case UtilityTools.Directions.upRight:
+
+                break;
+
+            case UtilityTools.Directions.right:
+
+                if (!tri.IsVertical ())
+                {
+                    //if im the leftmost box
+                    if (isDirectionMost (UtilityTools.OppositeDirection (dir)))
+                    {
+                        //if the side is empty
+                        if (tri.isSideEmpty (dir))
+                        {
+                            tribox.Move (dir);
+                        }
+                    }
+                }
+                else
+                {
+                    if (isCenterBox ())
+                    {
+                        //try to move
+                        if (tri.isSideEmpty (dir))
+                        {
+                            tribox.Move (dir);
+                        }
+                    }
+                    else
+                    {
+                        //try to rotate
+                        clockw = (isDirectionMost (UtilityTools.Directions.up));
+                        tribox.Rotate (clockw);
+                        return;
+                    }
+                }
+
+                break;
+
+            case UtilityTools.Directions.downRight:
+
+                break;
+
+            case UtilityTools.Directions.down:
+                if (tri.IsVertical ())
+                {
+                    //need to move down
+                    //if im the toppest box
+                    if (isDirectionMost (UtilityTools.OppositeDirection (dir)))
+                    {
+                        //if the downside is empty
+                        if (tri.isSideEmpty (dir))
+                        {
+                            tribox.Move (dir);
+                        }
+                    }
+                }
+                else
+                {
+
+                    if (isCenterBox ())
+                    {
+                        //try to move
+                        if (tri.isSideEmpty (dir))
+                        {
+                            tribox.Move (dir);
+                        }
+                    }
+                    else
+                    {
+                        //try to rotate
+                        clockw = (isDirectionMost (UtilityTools.Directions.right));
+                        tribox.Rotate (clockw);
+                        return;
+                    }
+
+                }
+
+                break;
+
+            case UtilityTools.Directions.downLeft:
+                break;
+
+            case UtilityTools.Directions.left:
+
+                if (!tri.IsVertical ())
+                {
+                    //if im the leftmost box
+                    if (isDirectionMost (UtilityTools.OppositeDirection (dir)))
+                    {
+                        //if the side is empty
+                        if (tri.isSideEmpty (dir))
+                        {
+                            tribox.Move (dir);
+                        }
+                    }
+                }
+                else
+                {
+                    if (isCenterBox ())
+                    {
+                        //try to move
+                        if (tri.isSideEmpty (dir))
+                        {
+                            tribox.Move (dir);
+                        }
+                    }
+                    else
+                    {
+                        //try to rotate
+                        clockw = (isDirectionMost (UtilityTools.Directions.down));
+                        tribox.Rotate (clockw);
+                        return;
+                    }
+                }
+
+                break;
+
+            case UtilityTools.Directions.upLeft:
+                break;
+
+            default:
+                return;
+
         }
 
     }
-    public Tile getNeighbourTile(UtilityTools.Directions dir)
+    public Tile getNeighbourTile (UtilityTools.Directions dir)
     {
-        if(grid_ref == null) return null;
+        if (grid_ref == null) return null;
 
-        return grid_ref.GetTile(index.getNeighbourPoint(dir));
+        return grid_ref.GetTile (index.getNeighbourPoint (dir));
     }
 
     public static Box.Element getRandomBoxElement ()
