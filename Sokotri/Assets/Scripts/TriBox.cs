@@ -161,13 +161,13 @@ public class TriBox : MonoBehaviour
         if (clockwise)
         {
             isRotating = true;
-            transform.DORotate (transform.eulerAngles + Vector3.back * 90, TheGrid.moveTime).OnComplete (() => { isRotating = false; getBoxMatches();});
+            transform.DORotate (transform.eulerAngles + Vector3.back * 90, TheGrid.moveTime).OnComplete (() => { isRotating = false; getBoxMatches (); });
 
         }
         else
         {
             isRotating = true;
-            transform.DORotate (transform.eulerAngles + Vector3.forward * 90, TheGrid.moveTime).OnComplete (() => { isRotating = false; getBoxMatches();});
+            transform.DORotate (transform.eulerAngles + Vector3.forward * 90, TheGrid.moveTime).OnComplete (() => { isRotating = false; getBoxMatches (); });
 
         }
 
@@ -444,9 +444,11 @@ public class TriBox : MonoBehaviour
         {
             isMoving = true;
 
-            transform.DOMove (transform.position + UtilityTools.getDirectionVector (dir) * 1, TheGrid.moveTime).OnComplete (() => { 
+            transform.DOMove (transform.position + UtilityTools.getDirectionVector (dir) * 1, TheGrid.moveTime).OnComplete (() =>
+            {
                 isMoving = false;
-                getBoxMatches();});
+                getBoxMatches ();
+            });
 
             for (int i = 0; i < destinations.Length && i < boxes.Length; i++)
             {
@@ -465,8 +467,6 @@ public class TriBox : MonoBehaviour
 
             }
 
-            
-
         }
         else
         {
@@ -475,7 +475,6 @@ public class TriBox : MonoBehaviour
 
         //print("first box: " + boxes.First() + boxes.First().GetPoint().print() + " is moving to position" + destination1.GetPoint().Clone().print());
         rearrangeBoxesArray ();
-       
 
     }
 
@@ -551,13 +550,44 @@ public class TriBox : MonoBehaviour
 
     }
 
-    public List<Box> getBoxMatches ()
+    public List<List<Box>> getBoxMatches ()
     {
 
-        List<Box> matches = new List<Box> ();
+        List<List<Box>> matches = new List<List<Box>> ();
         if (!isNextToBox ()) return matches;
 
-        print("I have box neighbours!");
+        for (int i = 0; i < boxes.Length; i++)
+        {
+            //NEED TO CHANGE, ONLY LEFT FOR NOW
+            matches.Add (boxes[i].getConnectedMatches (UtilityTools.Directions.left));
+
+        }
+
+        bool hasMatches = false;
+        foreach (List<Box> lb in matches)
+        {
+            if (lb.Any ())
+            {
+                if(lb.Count >= TheGrid.matchSize)
+                {
+                    hasMatches = true;
+                    break;
+                }
+                
+            }
+        }
+
+        if (hasMatches)
+        {
+            print ("the connected boxes are: ");
+            foreach (List<Box> lb in matches)
+            {
+                foreach (Box b in lb)
+                {
+                    print (b.name + "| " + b.GetElement ());
+                }
+            }
+        }
 
         return matches;
 
@@ -581,10 +611,10 @@ public class TriBox : MonoBehaviour
                 dirList.AddRange (UtilityTools.diagonals);
 
                 //also need to check if neighbour above/below edges are a box
-                firstMostNeighbour = getDirectionMostBox(UtilityTools.Directions.up).isMyNeighbourThisStatus(UtilityTools.Directions.up, Tile.Status.box);
-                secondMostNeighbour = getDirectionMostBox(UtilityTools.Directions.down).isMyNeighbourThisStatus(UtilityTools.Directions.down, Tile.Status.box);
-                 Tile neighbourUp = getDirectionMostBox(UtilityTools.Directions.up).getNeighbourTile(UtilityTools.Directions.up);
-                 Tile neighbourDown = getDirectionMostBox(UtilityTools.Directions.down).getNeighbourTile(UtilityTools.Directions.down);
+                firstMostNeighbour = getDirectionMostBox (UtilityTools.Directions.up).isMyNeighbourThisStatus (UtilityTools.Directions.up, Tile.Status.box);
+                secondMostNeighbour = getDirectionMostBox (UtilityTools.Directions.down).isMyNeighbourThisStatus (UtilityTools.Directions.down, Tile.Status.box);
+                Tile neighbourUp = getDirectionMostBox (UtilityTools.Directions.up).getNeighbourTile (UtilityTools.Directions.up);
+                Tile neighbourDown = getDirectionMostBox (UtilityTools.Directions.down).getNeighbourTile (UtilityTools.Directions.down);
 
             }
             else
@@ -593,9 +623,9 @@ public class TriBox : MonoBehaviour
                 dirList.Add (UtilityTools.Directions.down);
                 dirList.AddRange (UtilityTools.diagonals);
 
-                 //also need to check if neighbour leftright edges are a box
-                firstMostNeighbour = getDirectionMostBox(UtilityTools.Directions.left).isMyNeighbourThisStatus(UtilityTools.Directions.left, Tile.Status.box);
-                secondMostNeighbour = getDirectionMostBox(UtilityTools.Directions.right).isMyNeighbourThisStatus(UtilityTools.Directions.right, Tile.Status.box);
+                //also need to check if neighbour leftright edges are a box
+                firstMostNeighbour = getDirectionMostBox (UtilityTools.Directions.left).isMyNeighbourThisStatus (UtilityTools.Directions.left, Tile.Status.box);
+                secondMostNeighbour = getDirectionMostBox (UtilityTools.Directions.right).isMyNeighbourThisStatus (UtilityTools.Directions.right, Tile.Status.box);
             }
 
             return (b.haveAnyNeighbourThisStatus (dirList, Tile.Status.box) || firstMostNeighbour || secondMostNeighbour);

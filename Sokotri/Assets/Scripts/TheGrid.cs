@@ -42,7 +42,12 @@ public class TheGrid : MonoBehaviour
 
     [SerializeField]
     public static float moveTime = 0.25f;
+    [SerializeField]
+    public static int matchSize = 3;
 
+
+    //check i seed
+    
     // Start is called before the first frame update
     void Start ()
     {

@@ -254,6 +254,42 @@ public class Box : MonoBehaviour
          return false;
     }
 
+    public List<Box> getAllConnectedMatches()
+    {
+        List<Box> matches =  new List<Box>();
+        //getConnectedMatches(dir, matches);
+
+        return matches;
+    }
+    public List<Box> getConnectedMatches(UtilityTools.Directions dir)
+    {
+        Box.Element matchElement = this.element;
+        List<Box> matches =  new List<Box>();
+        getConnectedMatches(dir, matches);
+
+        return matches;
+
+    }
+
+    private void getConnectedMatches(UtilityTools.Directions dir, List<Box> list)
+    {
+        Box.Element matchElement = this.element;
+        Tile t = getNeighbourTile(dir);
+
+        if(t == null) return;
+
+        if(t.GetStatus() == Tile.Status.box && t.GetBox() != null)
+        {
+            if(t.GetBox().GetElement() == matchElement)
+            {
+                list.Add(t.GetBox());
+                if(!list.Contains(this) && this.element == matchElement) list.Add(this);
+                t.GetBox().getConnectedMatches(dir,list);
+            }
+        }
+
+    }
+
     public Point GetPoint ()
     {
         return index;

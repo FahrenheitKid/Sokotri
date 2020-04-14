@@ -533,7 +533,7 @@ MonoBehaviour:
     type: 3}
   width: 12
   height: 12
-  seed: 
+  seed: j
   loadMapFilename: Plaza.txt
 --- !u!4 &1583731896
 Transform:
