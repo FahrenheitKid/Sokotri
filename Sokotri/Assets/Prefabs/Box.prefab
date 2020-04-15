@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 8937244991837231132}
   - component: {fileID: 2410263216443585031}
   - component: {fileID: 5244569144051342052}
+  - component: {fileID: 431045305815841931}
   m_Layer: 0
   m_Name: Box
   m_TagString: Box
@@ -108,3 +109,19 @@ MonoBehaviour:
     y: 0
   tile: {fileID: 0}
   tribox: {fileID: 0}
+  grid_ref: {fileID: 0}
+  spriteRenderer: {fileID: 0}
+--- !u!114 &431045305815841931
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4760961329323521045}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbf3575480402db40813e763382412fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  color: 0
+  eraseRenderer: 0

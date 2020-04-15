@@ -151,6 +151,14 @@ public class TheGrid : MonoBehaviour
 
     }
 
+    public void Match(List<Box> boxMatchesList)
+    {
+        
+        if(!boxMatchesList.Any()) return;
+
+
+    }
+
     void loadGridLayoutFromFile (string filep)
     {
         gridLayout = Load (filep);
@@ -164,7 +172,7 @@ public class TheGrid : MonoBehaviour
     {
         if (isPointOutOfBounds (p))
         {
-            print ("Point" + p.print () + "is out of bounds");
+            //print ("Point" + p.print () + "is out of bounds");
             return null;
         }
 

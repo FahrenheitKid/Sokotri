@@ -5,6 +5,64 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
+
+
+public class SequenceComparer<T> : IEqualityComparer<IEnumerable<T>>
+{
+    private IEqualityComparer<T> comparer;
+    public SequenceComparer(IEqualityComparer<T> comparer = null)
+    {
+        this.comparer = comparer ?? EqualityComparer<T>.Default;
+    }
+    public bool Equals(IEnumerable<T> x, IEnumerable<T> y)
+    {
+        return x.SequenceEqual(y, comparer);
+    }
+
+    public int GetHashCode(IEnumerable<T> sequence)
+    {
+        unchecked
+        {
+            int hash = 19;
+            foreach (var item in sequence)
+                hash = hash * 79 + comparer.GetHashCode(item);
+            return hash;
+        }
+    }
+}
+
+public class ListEqualityComparer<T> : IEqualityComparer<List<T>>
+{
+    private readonly IEqualityComparer<T> _itemEqualityComparer;
+
+    public ListEqualityComparer() : this(null) { }
+
+    public ListEqualityComparer(IEqualityComparer<T> itemEqualityComparer)
+    {
+        _itemEqualityComparer = itemEqualityComparer ?? EqualityComparer<T>.Default;
+    }
+
+    public static readonly ListEqualityComparer<T> Default = new ListEqualityComparer<T>();
+
+    public bool Equals(List<T> x, List<T> y)
+    {
+        if (ReferenceEquals(x, y)) return true;
+        if (ReferenceEquals(x, null) || ReferenceEquals(y, null)) return false;
+        return x.Count == y.Count && !x.Except(y, _itemEqualityComparer).Any();
+    }
+
+    public int GetHashCode(List<T> list)
+    {
+        int hash = 17;
+        foreach (var itemHash in list.Select(x => _itemEqualityComparer.GetHashCode(x))
+                                     .OrderBy(h => h))
+        {
+            hash += 31 * itemHash;
+        }
+        return hash;
+    }
+}
+
 public static class CollectionsExtensions
 {
     public static List<int> FindAllIndex<T> (this List<T> container, System.Predicate<T> match)
@@ -62,6 +120,19 @@ static public class UtilityTools
         Directions.down,
         Directions.left
     };
+
+    public static Directions[] horizontals = {
+
+        Directions.right,
+        Directions.left
+    };
+
+    public static Directions[] verticals = {
+
+        Directions.up,
+        Directions.down
+    };
+
     public static Directions[] diagonals = {
 
         Directions.upRight,

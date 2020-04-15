@@ -66,6 +66,7 @@ GameObject:
   - component: {fileID: 5352873831698738918}
   - component: {fileID: 3657583685226579116}
   - component: {fileID: 2713533309878859366}
+  - component: {fileID: 5317440500403582263}
   m_Layer: 0
   m_Name: Box 2
   m_TagString: Box
@@ -163,7 +164,22 @@ MonoBehaviour:
     y: 0
   tile: {fileID: 0}
   tribox: {fileID: 77574813558103184}
+  grid_ref: {fileID: 0}
   spriteRenderer: {fileID: 3657583685226579116}
+--- !u!114 &5317440500403582263
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4140313228155055602}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbf3575480402db40813e763382412fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  color: 0
+  eraseRenderer: 0
 --- !u!1 &4440954596258334481
 GameObject:
   m_ObjectHideFlags: 0
@@ -175,6 +191,7 @@ GameObject:
   - component: {fileID: 8327750245238698859}
   - component: {fileID: 9191238728009589570}
   - component: {fileID: 7478087222524453773}
+  - component: {fileID: 8959111471988699801}
   m_Layer: 0
   m_Name: Box 3
   m_TagString: Box
@@ -272,7 +289,22 @@ MonoBehaviour:
     y: 0
   tile: {fileID: 0}
   tribox: {fileID: 77574813558103184}
+  grid_ref: {fileID: 0}
   spriteRenderer: {fileID: 9191238728009589570}
+--- !u!114 &8959111471988699801
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4440954596258334481}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbf3575480402db40813e763382412fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  color: 0
+  eraseRenderer: 0
 --- !u!1 &5074825563801539942
 GameObject:
   m_ObjectHideFlags: 0
@@ -284,6 +316,7 @@ GameObject:
   - component: {fileID: 8680770861996554607}
   - component: {fileID: 2670012585281721204}
   - component: {fileID: 5527957667150232471}
+  - component: {fileID: 7321363578915483649}
   m_Layer: 0
   m_Name: Box 1
   m_TagString: Box
@@ -381,4 +414,19 @@ MonoBehaviour:
     y: 0
   tile: {fileID: 0}
   tribox: {fileID: 77574813558103184}
+  grid_ref: {fileID: 0}
   spriteRenderer: {fileID: 2670012585281721204}
+--- !u!114 &7321363578915483649
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5074825563801539942}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbf3575480402db40813e763382412fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  color: 0
+  eraseRenderer: 0
