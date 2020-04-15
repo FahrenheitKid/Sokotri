@@ -800,36 +800,42 @@ public class Box : MonoBehaviour
             }
             else
             {
+
                 result[i] = (Box.Element)Random.Range(0, System.Enum.GetNames(typeof(Box.Element)).Length - 1);
-            }
-
-            if (i > 1 && i < quantity - 1)
-            {
-                if (result[i - 1] == result[i] || result[i - 1] == Box.Element.quintessential)
+                if (hasQuint)
                 {
-                    sameCount++;
-                }
-                if (result[i - 2] == result[i] || result[i - 2] == Box.Element.quintessential)
-                {
-                    sameCount++;
-                }
-
-                if (sameCount >= 2)
-                {
-                    int loops = 0;
-                    while (result[i - 1] == result[i] && loops < 100)
+                    if(result.ToList().FindAll(x=> x == result[i]).Count > 1)
                     {
-                        result[i] = (Box.Element)Random.Range(0, System.Enum.GetNames(typeof(Box.Element)).Length - 1);
-                        loops++;
+                        Box.Element repeated = result[i];
+                        int loopcount = 0;
+                        while((result[i] == repeated || result[i] == Box.Element.quintessential) && loopcount < 100)
+                        {
+                            result[i] = (Box.Element)Random.Range(0, System.Enum.GetNames(typeof(Box.Element)).Length - 1);
+                            loopcount++;
+                        }
                     }
-                    sameCount = 0;
+                    
                 }
                 else
                 {
-                    sameCount = 0;
+                    if (result.ToList().FindAll(x => x == result[i]).Count >2)
+                    {
+                        Box.Element repeated = result[i];
+                        int loopcount = 0;
+                        while ((result[i] == repeated || result[i] == Box.Element.quintessential) && loopcount < 100)
+                        {
+                            result[i] = (Box.Element)Random.Range(0, System.Enum.GetNames(typeof(Box.Element)).Length - 1);
+                            loopcount++;
+                        }
+                    }
                 }
+                
             }
+
+           
         }
+
+
         return result;
     }
 }
