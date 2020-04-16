@@ -1,7 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class Tile : MonoBehaviour
 {
@@ -19,37 +16,39 @@ public class Tile : MonoBehaviour
         wall,
         management,
         spawn
-
     }
 
     [SerializeField]
-    SpriteRenderer spriteRenderer;
-    [SerializeField]
-    Color32 color;
+    private SpriteRenderer spriteRenderer;
 
     [SerializeField]
-    TheGrid grid;
-    [SerializeField]
-    Box box;
-    [SerializeField]
-    Status status;
+    private Color32 color;
 
     [SerializeField]
-    Kind kind;
+    private TheGrid grid;
 
     [SerializeField]
-    Point index;
+    private Box box;
+
+    [SerializeField]
+    private Status status;
+
+    [SerializeField]
+    private Kind kind;
+
+    [SerializeField]
+    private Point index;
 
     // Start is called before the first frame update
-    void Start ()
+    private void Start()
     {
         if (spriteRenderer == null)
         {
-            spriteRenderer = GetComponent<SpriteRenderer> ();
+            spriteRenderer = GetComponent<SpriteRenderer>();
         }
     }
 
-    public void Init (Point p, Color32 c, TheGrid g, Status s = Status.empty, Kind k = Kind.floor)
+    public void Init(Point p, Color32 c, TheGrid g, Status s = Status.empty, Kind k = Kind.floor)
     {
         name = "Tile( " + p.x + ", " + p.y + ")";
         index = p;
@@ -58,43 +57,44 @@ public class Tile : MonoBehaviour
         status = s;
         kind = k;
         grid = g;
-
     }
 
-    public void resetPosition ()
+    public void resetPosition()
     {
-        transform.position = grid.getExpectedPositionFromPoint (index);
+        transform.position = grid.getExpectedPositionFromPoint(index);
     }
 
-    public Point GetPoint ()
+    public Point GetPoint()
     {
         return index;
     }
-    public Status GetStatus ()
+
+    public Status GetStatus()
     {
         return status;
     }
 
-    public Box GetBox ()
+    public Box GetBox()
     {
         return box;
     }
-    public bool isEmpty ()
+
+    public bool isEmpty()
     {
         return (kind != Kind.hole && kind != Kind.wall && status != Status.box && status != Status.player);
     }
 
-    public void setKind (Kind k)
+    public void setKind(Kind k)
     {
         kind = k;
         if (k == Kind.management)
         {
-            color = new Color32 (248, 174, 255, 255);
+            color = new Color32(248, 174, 255, 255);
             spriteRenderer.color = color;
         }
         else if (k == Kind.spawn)
         {
-            color = new Color32 (196, 137, 205, 255);
+            color = new Color32(196, 137, 205, 255);
             spriteRenderer.color = color;
         }
         else
@@ -102,11 +102,10 @@ public class Tile : MonoBehaviour
             color = Color.white;
             spriteRenderer.color = color;
         }
-
     }
 
     //check if this tile and neighbours are of a specific type and status
-    public bool AreMeAndNeighbours (Kind k, Status s, bool vertical, bool horizontal)
+    public bool AreMeAndNeighbours(Kind k, Status s, bool vertical, bool horizontal)
     {
         Point neighbour1 = Point.zero;
         Point neighbour2 = Point.zero;
@@ -115,47 +114,44 @@ public class Tile : MonoBehaviour
 
         if (vertical)
         {
-            neighbour1 = index.getNeighbourPoint (UtilityTools.Directions.up);
-            neighbour2 = index.getNeighbourPoint (UtilityTools.Directions.down);
+            neighbour1 = index.getNeighbourPoint(UtilityTools.Directions.up);
+            neighbour2 = index.getNeighbourPoint(UtilityTools.Directions.down);
 
-            if (grid.isPointOutOfBounds (neighbour1) || grid.isPointOutOfBounds (neighbour2)) return false;
+            if (grid.isPointOutOfBounds(neighbour1) || grid.isPointOutOfBounds(neighbour2)) return false;
 
-            if (grid.GetTile (neighbour1).GetKind () != k || grid.GetTile (neighbour2).GetKind () != k)
+            if (grid.GetTile(neighbour1).GetKind() != k || grid.GetTile(neighbour2).GetKind() != k)
             {
                 return false;
             }
-
         }
 
         if (horizontal)
         {
-            neighbour1 = index.getNeighbourPoint (UtilityTools.Directions.left);
-            neighbour2 = index.getNeighbourPoint (UtilityTools.Directions.right);
+            neighbour1 = index.getNeighbourPoint(UtilityTools.Directions.left);
+            neighbour2 = index.getNeighbourPoint(UtilityTools.Directions.right);
 
-            if (grid.isPointOutOfBounds (neighbour1) || grid.isPointOutOfBounds (neighbour2)) return false;
+            if (grid.isPointOutOfBounds(neighbour1) || grid.isPointOutOfBounds(neighbour2)) return false;
 
-            if (grid.GetTile (neighbour1).GetKind () != k || grid.GetTile (neighbour2).GetKind () != k)
+            if (grid.GetTile(neighbour1).GetKind() != k || grid.GetTile(neighbour2).GetKind() != k)
             {
                 return false;
             }
-
         }
 
         return true;
     }
 
-    public Kind GetKind ()
+    public Kind GetKind()
     {
         return kind;
     }
 
-    public void setStatus (Status s, Box b = null)
+    public void setStatus(Status s, Box b = null)
     {
         status = s;
 
         switch (status)
         {
-
             case Status ss when ss == Status.empty:
                 box = null;
                 break;
@@ -168,7 +164,10 @@ public class Tile : MonoBehaviour
                 box = null;
                 break;
         }
-
     }
 
+    public bool isMatchable()
+    {
+        return status == Status.box && kind == Kind.floor;
+    }
 }

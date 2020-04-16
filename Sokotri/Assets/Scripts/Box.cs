@@ -1,3 +1,4 @@
+using DG.Tweening;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -59,8 +60,11 @@ public class Box : MonoBehaviour
 
     public static Color32 quintessentialColor = Color.magenta;
 
+    [SerializeField]
+    public bool isHighlighted;
+
     //probability of each type of box
-    private static float[] typeWeights = { 18, 18, 18, 18, 18, 100 };
+    private static float[] typeWeights = { 18, 18, 18, 18, 18, 10 };
 
     // Start is called before the first frame update
     private void Start()
@@ -281,16 +285,15 @@ public class Box : MonoBehaviour
         return matches;
     }
 
-    public List<Box> getConnectedMatches(UtilityTools.Directions dir)
+    public List<Box> getConnectedMatches(UtilityTools.Directions axisDir)
     {
         Box.Element matchElement = this.element;
         List<Box> result = new List<Box>();
-        Tile t = getNeighbourTile(dir);
 
-        if (t == null) return result;
-
-        if (UtilityTools.horizontals.Contains(dir))
+        if (UtilityTools.horizontals.Contains(axisDir))
         {
+            if (getNeighbourTile(UtilityTools.Directions.right) == null && getNeighbourTile(UtilityTools.Directions.left) == null) return result;
+
             //get all connected ones left and right
             List<Box> mixedRight = (getConnectedBoxes(UtilityTools.Directions.right));
             List<Box> mixedLeft = (getConnectedBoxes(UtilityTools.Directions.left));
@@ -323,12 +326,12 @@ public class Box : MonoBehaviour
 
                     bool leftPass = false;
                     bool rightPass = false;
-                    if (areAllConnected(dir, mixedLeft) && mixedLeft.Count >= TheGrid.matchSize)
+                    if (areAllConnected(axisDir, mixedLeft) && mixedLeft.Count >= TheGrid.matchSize)
                     {
                         result.AddRange(mixedLeft);
                         leftPass = true;
                     }
-                    if (areAllConnected(dir, mixedRight) && mixedRight.Count >= TheGrid.matchSize)
+                    if (areAllConnected(axisDir, mixedRight) && mixedRight.Count >= TheGrid.matchSize)
                     {
                         rightPass = true;
                     }
@@ -366,15 +369,17 @@ public class Box : MonoBehaviour
             result.RemoveAll(x => x.GetElement() != matchElement && x.GetElement() != Box.Element.quintessential);
 
             //matches!!!
-            if (!areAllConnected(dir, result) || result.Count < TheGrid.matchSize)
+            if (!areAllConnected(axisDir, result) || result.Count < TheGrid.matchSize)
             {
                 result.Clear();
             }
 
             return result;
         }
-        else if (UtilityTools.verticals.Contains(dir))
+        else if (UtilityTools.verticals.Contains(axisDir))
         {
+            if (getNeighbourTile(UtilityTools.Directions.up) == null && getNeighbourTile(UtilityTools.Directions.down) == null) return result;
+
             //get all connected ones left and right
             List<Box> mixedUp = (getConnectedBoxes(UtilityTools.Directions.up));
             List<Box> mixedDown = (getConnectedBoxes(UtilityTools.Directions.down));
@@ -407,12 +412,12 @@ public class Box : MonoBehaviour
 
                     bool downPass = false;
                     bool upPass = false;
-                    if (areAllConnected(dir, mixedDown) && mixedDown.Count >= TheGrid.matchSize)
+                    if (areAllConnected(axisDir, mixedDown) && mixedDown.Count >= TheGrid.matchSize)
                     {
                         result.AddRange(mixedDown);
                         downPass = true;
                     }
-                    if (areAllConnected(dir, mixedUp) && mixedUp.Count >= TheGrid.matchSize)
+                    if (areAllConnected(axisDir, mixedUp) && mixedUp.Count >= TheGrid.matchSize)
                     {
                         upPass = true;
                     }
@@ -434,6 +439,10 @@ public class Box : MonoBehaviour
 
                     return result;
                 }
+                else
+                {
+                    matchElement = upElement;
+                }
             }
 
             result.AddRange(mixedDown.Distinct());
@@ -443,10 +452,10 @@ public class Box : MonoBehaviour
             result = result.Distinct().OrderBy(x => x.GetPoint().y).ToList();
 
             //remove all elements that arent a match (itself or quint)
-            result.RemoveAll(x => x.GetElement() != this.element && x.GetElement() != Box.Element.quintessential);
+            result.RemoveAll(x => x.GetElement() != matchElement && x.GetElement() != Box.Element.quintessential);
 
             //matches!!!
-            if (!areAllConnected(dir, result) || result.Count < TheGrid.matchSize)
+            if (!areAllConnected(axisDir, result) || result.Count < TheGrid.matchSize)
             {
                 result.Clear();
             }
@@ -562,6 +571,11 @@ public class Box : MonoBehaviour
     public TriBox GetTriBox()
     {
         return tribox;
+    }
+
+    public void SetTriBox(TriBox tri)
+    {
+        tribox = tri;
     }
 
     public void Push(UtilityTools.Directions dir)
@@ -774,6 +788,109 @@ public class Box : MonoBehaviour
         return true;
     }
 
+    public void Kill(float delayTime)
+    {
+        this.AttachTimer(delayTime, Kill);
+
+        if (tribox != null)
+        {
+            int boxIndex = System.Array.FindIndex(tribox.GetBoxes(), x => x == this);
+            if (boxIndex > 0 && boxIndex < tribox.GetBoxes().Length)
+            {
+                tribox.GetBoxes()[boxIndex] = null;
+            }
+            tribox = null;
+        }
+
+        Highlight(false);
+        transform.parent = null;
+    }
+
+    public void Highlight(bool on)
+    {
+        if (on == isHighlighted) return;
+
+        isHighlighted = on;
+        GetComponent<cakeslice.Outline>().color = isHighlighted ? 1 : 0;
+    }
+
+    public void Kill()
+    {
+        Highlight(false);
+        GetTile().setStatus(Tile.Status.empty);
+
+        if (tribox != null)
+        {
+            int boxIndex = System.Array.FindIndex(tribox.GetBoxes(), x => x == this);
+            if (boxIndex > 0 && boxIndex < tribox.GetBoxes().Length)
+            {
+                tribox.GetBoxes()[boxIndex] = null;
+            }
+            tribox = null;
+        }
+        transform.parent = null;
+
+        // Grab a free Sequence to use
+        Sequence killSequence = DOTween.Sequence();
+
+        killSequence.Append(transform.DOPunchScale(transform.localScale, TheGrid.boxKillAnimationTime / 2));
+        killSequence.Append(transform.DOScale(Vector3.zero, TheGrid.boxKillAnimationTime / 2));
+
+        killSequence.OnComplete(() =>
+        {
+            Destroy(this.gameObject);
+        });
+    }
+
+    public bool isMatchable()
+    {
+        if (tile == null) return false;
+
+        if (tribox != null)
+        {
+            foreach (Box b in tribox.GetBoxes())
+            {
+                if (b.GetTile().isMatchable() == false) return false;
+            }
+        }
+
+        return tile.isMatchable();
+    }
+
+    public static Color32 getElementColor(Box.Element el)
+    {
+        switch (el)
+        {
+            case Element.ground:
+                return new Color32(205, 140, 74, 255);
+                break;
+
+            case Element.fire:
+                return new Color32(231, 76, 60, 255);
+                break;
+
+            case Element.water:
+                return new Color32(47, 149, 208, 255);
+                break;
+
+            case Element.grass:
+                return new Color32(46, 204, 113, 255);
+                break;
+
+            case Element.steel:
+                return new Color32(137, 164, 166, 255);
+                break;
+
+            case Element.quintessential:
+                return new Color32(110, 0, 133, 255);
+                break;
+
+            default:
+                return new Color32(0, 0, 0, 255);
+                break;
+        }
+    }
+
     public static Box.Element getRandomBoxElement()
     {
         //get a random box based on their probabilities
@@ -800,25 +917,10 @@ public class Box : MonoBehaviour
             }
             else
             {
-
                 result[i] = (Box.Element)Random.Range(0, System.Enum.GetNames(typeof(Box.Element)).Length - 1);
                 if (hasQuint)
                 {
-                    if(result.ToList().FindAll(x=> x == result[i]).Count > 1)
-                    {
-                        Box.Element repeated = result[i];
-                        int loopcount = 0;
-                        while((result[i] == repeated || result[i] == Box.Element.quintessential) && loopcount < 100)
-                        {
-                            result[i] = (Box.Element)Random.Range(0, System.Enum.GetNames(typeof(Box.Element)).Length - 1);
-                            loopcount++;
-                        }
-                    }
-                    
-                }
-                else
-                {
-                    if (result.ToList().FindAll(x => x == result[i]).Count >2)
+                    if (result.ToList().FindAll(x => x == result[i]).Count > 1)
                     {
                         Box.Element repeated = result[i];
                         int loopcount = 0;
@@ -829,12 +931,21 @@ public class Box : MonoBehaviour
                         }
                     }
                 }
-                
+                else
+                {
+                    if (result.ToList().FindAll(x => x == result[i]).Count > 2)
+                    {
+                        Box.Element repeated = result[i];
+                        int loopcount = 0;
+                        while ((result[i] == repeated || result[i] == Box.Element.quintessential) && loopcount < 100)
+                        {
+                            result[i] = (Box.Element)Random.Range(0, System.Enum.GetNames(typeof(Box.Element)).Length - 1);
+                            loopcount++;
+                        }
+                    }
+                }
             }
-
-           
         }
-
 
         return result;
     }

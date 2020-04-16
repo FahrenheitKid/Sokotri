@@ -9,6 +9,8 @@ TagManager:
   - GridLayout
   - Box
   - TriBox
+  - Score
+  - PreviewBoxes
   layers:
   - Default
   - TransparentFX

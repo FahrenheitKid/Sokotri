@@ -19,6 +19,9 @@ public class TriBox : MonoBehaviour
     private Tile centerTile;
 
     [SerializeField]
+    private bool isHighlighted;
+
+    [SerializeField]
     private bool isVertical;
 
     private bool isRotating = false;
@@ -156,12 +159,12 @@ public class TriBox : MonoBehaviour
         if (clockwise)
         {
             isRotating = true;
-            transform.DORotate(transform.eulerAngles + Vector3.back * 90, TheGrid.moveTime).OnComplete(() => { isRotating = false; getBoxMatches(); });
+            transform.DORotate(transform.eulerAngles + Vector3.back * 90, TheGrid.moveTime).OnComplete(() => { isRotating = false; grid_ref.Match(getBoxMatches()); });
         }
         else
         {
             isRotating = true;
-            transform.DORotate(transform.eulerAngles + Vector3.forward * 90, TheGrid.moveTime).OnComplete(() => { isRotating = false; getBoxMatches(); });
+            transform.DORotate(transform.eulerAngles + Vector3.forward * 90, TheGrid.moveTime).OnComplete(() => { isRotating = false; grid_ref.Match(getBoxMatches()); });
         }
 
         //print("first box: " + boxes.First() + boxes.First().GetPoint().print() + " is moving to position" + destination1.GetPoint().Clone().print());
@@ -423,7 +426,8 @@ public class TriBox : MonoBehaviour
             transform.DOMove(transform.position + UtilityTools.getDirectionVector(dir) * 1, TheGrid.moveTime).OnComplete(() =>
          {
              isMoving = false;
-             getBoxMatches();
+             grid_ref.spawnTriBox();
+             grid_ref.Match(getBoxMatches());
          });
 
             for (int i = 0; i < destinations.Length && i < boxes.Length; i++)
@@ -441,6 +445,8 @@ public class TriBox : MonoBehaviour
                     boxes[i].setTile(destinations[i]);
                 }
             }
+
+            
         }
         else
         {
@@ -525,9 +531,18 @@ public class TriBox : MonoBehaviour
 
         if (!isNextToBox()) return matches;
 
+        if (System.Array.FindIndex(boxes, x => x.GetElement() == Box.Element.quintessential) != -1)
+        {
+            int a = 0;
+        }
+
         for (int i = 0; i < boxes.Length; i++)
         {
-            foreach (List<Box> b in boxes[i].getAllConnectedMatches())
+            List<List<Box>> connectedMatches = boxes[i].getAllConnectedMatches();
+
+            if (!connectedMatches.Any(x => x.Any())) continue;
+
+            foreach (List<Box> b in connectedMatches)
             {
                 if (b.Any())
                     matches.Add(b);
@@ -536,7 +551,7 @@ public class TriBox : MonoBehaviour
             // matches.Add(boxes[i].getConnectedMatches(UtilityTools.Directions.up));
         }
 
-        matches.RemoveAll(x => x.Count < TheGrid.matchSize);
+        matches.RemoveAll(x => x.Count < TheGrid.matchSize || x.Any(y => y.isMatchable() == false));
 
         // removes dublicates matches list
         matches = matches.Distinct(new ListEqualityComparer<Box>(new BoxElementEqualityComparer())).ToList();
@@ -606,9 +621,60 @@ public class TriBox : MonoBehaviour
         }
     }
 
+    public void Highlight(bool on)
+    {
+        if (isHighlighted == on) return;
+
+        isHighlighted = on;
+        foreach (Box b in boxes)
+        {
+            if (b == null) continue;
+            b.Highlight(on);
+        }
+    }
+
+    public bool isOutsideSafeArea()
+    {
+        foreach(Box b in boxes)
+        {
+            if (b == null) continue;
+
+            if (b.GetTile() == null) continue;
+
+            if(b.GetTile().GetKind() == Tile.Kind.spawn || b.GetTile().GetKind() == Tile.Kind.management)
+                    return false;
+        }
+
+        return true;
+    }
+
     // Update is called once per frame
     private void Update()
     {
+    }
+
+    public void Kill()
+    {
+        for (int i = 0; i < boxes.Length; i++)
+        {
+            if (boxes[i] != null)
+            {
+                if (boxes[i].isInTribox() && boxes[i].GetTriBox() == this)
+                {
+                    boxes[i].transform.SetParent(null);
+                    boxes[i].Highlight(false);
+                    boxes[i].SetTriBox(null);
+                    boxes[i] = null;
+                }
+            }
+        }
+
+        foreach (Transform t in transform)
+        {
+            t.SetParent(null);
+        }
+
+        Destroy(this.gameObject);
     }
 
     public Box[] GetBoxes()
