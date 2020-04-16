@@ -2,6 +2,7 @@ using DG.Tweening;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 internal class BoxElementEqualityComparer : IEqualityComparer<Box>
 {
@@ -62,6 +63,9 @@ public class Box : MonoBehaviour
 
     [SerializeField]
     public bool isHighlighted;
+
+    [SerializeField]
+    Tween matchMoveTween;
 
     //probability of each type of box
     private static float[] typeWeights = { 18, 18, 18, 18, 18, 10 };
@@ -285,6 +289,22 @@ public class Box : MonoBehaviour
         return matches;
     }
 
+    public void Swap(Box b)
+    {
+        if (b == null) return;
+
+        Tile otherTile = b.GetTile();
+        Tile myTile = tile;
+
+        b.setTile(myTile, Tile.Status.box);
+        setTile(otherTile, Tile.Status.box);
+
+        b.MoveTo(grid_ref.getExpectedPositionFromPoint(b.GetPoint()));
+        MoveTo(grid_ref.getExpectedPositionFromPoint(GetPoint()));
+
+
+    }
+
     public List<Box> getConnectedMatches(UtilityTools.Directions axisDir)
     {
         Box.Element matchElement = this.element;
@@ -351,6 +371,10 @@ public class Box : MonoBehaviour
                         }
                     }
 
+                    if (result.Count < TheGrid.matchSize || result.Any(y => y.isMatchable() == false))
+                    {
+                        result.Clear();
+                    }
                     return result;
                 }
                 else
@@ -368,8 +392,8 @@ public class Box : MonoBehaviour
             //remove all elements that arent a match (itself or quint)
             result.RemoveAll(x => x.GetElement() != matchElement && x.GetElement() != Box.Element.quintessential);
 
-            //matches!!!
-            if (!areAllConnected(axisDir, result) || result.Count < TheGrid.matchSize)
+            //not matches!!!
+            if (!areAllConnected(axisDir, result) || result.Count < TheGrid.matchSize || result.Any(y => y.isMatchable() == false))
             {
                 result.Clear();
             }
@@ -437,6 +461,10 @@ public class Box : MonoBehaviour
                         }
                     }
 
+                    if (result.Count < TheGrid.matchSize || result.Any(y => y.isMatchable() == false))
+                    {
+                        result.Clear();
+                    }
                     return result;
                 }
                 else
@@ -454,8 +482,8 @@ public class Box : MonoBehaviour
             //remove all elements that arent a match (itself or quint)
             result.RemoveAll(x => x.GetElement() != matchElement && x.GetElement() != Box.Element.quintessential);
 
-            //matches!!!
-            if (!areAllConnected(axisDir, result) || result.Count < TheGrid.matchSize)
+            //not matches!!!
+            if (!areAllConnected(axisDir, result) || result.Count < TheGrid.matchSize || result.Any(y => y.isMatchable() == false))
             {
                 result.Clear();
             }
@@ -857,6 +885,120 @@ public class Box : MonoBehaviour
         return tile.isMatchable();
     }
 
+    public void OnMouseDown()
+    {
+        if (!grid_ref.IsMatch3Phase()) return;
+        if(Input.GetMouseButtonDown(0))
+        {
+            Match3.instance.GrabBox(this);
+        }
+    }
+
+    public void OnMouseUp()
+    {
+        if (!grid_ref.IsMatch3Phase()) return;
+
+        if (Input.GetMouseButtonUp(0))
+        {
+            Match3.instance.DropBox();
+        }
+    }
+
+    public void MoveTo(Vector2 destination, bool global = true, bool tween = true, bool tempRemoveParent = true)
+    {
+
+        if(matchMoveTween != null)
+        {
+            if(matchMoveTween.IsPlaying())
+            {
+                matchMoveTween.Kill();
+            }
+        }
+        Transform par = transform.parent;
+        if(tempRemoveParent)
+        {
+            transform.parent = null;
+        }
+        if (transform.parent != null && global)
+        {
+            if(tween)
+            {
+                matchMoveTween = transform.DOMove(destination + (Vector2)transform.parent.position, TheGrid.moveTime).SetEase(Ease.OutQuart);
+            }
+            else
+            {
+                transform.position = destination + (Vector2)transform.parent.position;
+            }
+           
+        }
+        else if (transform.parent == null && global)
+        {
+            if (tween)
+            {
+                matchMoveTween = transform.DOMove(destination, TheGrid.moveTime).SetEase(Ease.OutQuart);
+            }
+                
+            else
+            {
+                transform.position = destination;
+            }
+                
+        }
+        else
+        {
+            if (tween)
+            {
+                matchMoveTween = transform.DOLocalMove(destination + (Vector2)transform.parent.position, TheGrid.moveTime).SetEase(Ease.OutQuart);
+            }
+                
+            else
+            {
+                transform.localPosition = destination + (Vector2)transform.parent.position;
+            }
+               
+        }
+
+        if (tempRemoveParent)
+        {
+            if(tween)
+            {
+                matchMoveTween.OnComplete(() => { transform.parent = par; });
+                matchMoveTween.OnKill(() => { transform.parent = par; });
+            }
+            else
+            transform.parent = par;
+        }
+
+
+    }
+
+    public void Move(Vector2 amount, bool global = true, bool tween = true)
+    {
+
+        if (matchMoveTween != null)
+        {
+            if (matchMoveTween.IsPlaying())
+            {
+                matchMoveTween.Kill();
+            }
+        }
+
+
+        if (transform.parent != null && global)
+        {
+            matchMoveTween = transform.DOMove((Vector2)transform.position + (Vector2)transform.parent.position + amount, TheGrid.moveTime).SetEase(Ease.OutQuart);
+        }
+        else if (transform.parent == null && global)
+        {
+
+            matchMoveTween = transform.DOMove((Vector2)transform.position + amount, TheGrid.moveTime).SetEase(Ease.OutQuart);
+        }
+        else
+        {
+            matchMoveTween = transform.DOLocalMove((Vector2)transform.position + amount, TheGrid.moveTime).SetEase(Ease.OutQuart);
+        }
+    }
+
     public static Color32 getElementColor(Box.Element el)
     {
         switch (el)
@@ -949,4 +1091,6 @@ public class Box : MonoBehaviour
 
         return result;
     }
+
+   
 }

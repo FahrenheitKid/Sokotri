@@ -16,6 +16,27 @@ public class Point
         y = y_;
     }
 
+    public void Add(Point p)
+    {
+        x += p.x;
+        y += p.y;
+    }
+    public void Add(int _x, int _y)
+    {
+        x += _x;
+        y +=_y;
+    }
+
+    public static Point byMagnitude(Point p, int magnitude)
+    {
+        return new Point(p.x * magnitude, p.y * magnitude);
+    }
+
+    public Vector2 ToVector2()
+    {
+        return new Vector2(x, y);
+    }
+
     public Point getNeighbourPoint (UtilityTools.Directions dir)
     {
         Point p = new Point (x, y);
@@ -103,7 +124,7 @@ public class Point
         return new Point (x, y);
     }
 
-    public Point Clone (Point p)
+    public static Point Clone (Point p)
     {
         return new Point (p.x, p.y);
     }

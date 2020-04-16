@@ -38,6 +38,7 @@ public class Player : MonoBehaviour
     bool canMissStepPlay;
 
 
+
     // Start is called before the first frame update
     private void Start()
     {
@@ -52,6 +53,8 @@ public class Player : MonoBehaviour
     private void Update()
     {
         Move(getInputDirection());
+
+
     }
 
     public void Init(Point spawn, TheGrid grid = null)

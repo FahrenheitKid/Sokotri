@@ -58,6 +58,10 @@ public class TheGrid : MonoBehaviour
     private int score = 0;
 
     [SerializeField]
+    bool isMatch3Phase = false;
+
+    [Header("Audio")]
+    [SerializeField]
     AudioClip matchAudioClip;
 
     [SerializeField]
@@ -118,6 +122,11 @@ public class TheGrid : MonoBehaviour
         {
             UtilityTools.QuitGame();
         }
+
+        if (Input.GetKeyDown(KeyCode.M))
+        {
+            toggleMatch3Phase();
+        }
     }
 
     private void setupGrid(bool useGridLayout = true)
@@ -176,6 +185,7 @@ public class TheGrid : MonoBehaviour
     {
         spawnTriBox(previewBoxes.getCurrentBoxElements());
     }
+
 
     public void Match(List<List<Box>> boxMatchesList)
     {
@@ -263,6 +273,20 @@ public class TheGrid : MonoBehaviour
     public int getHeight()
     {
         return height;
+    }
+
+    public bool IsMatch3Phase()
+    {
+        return isMatch3Phase;
+    }
+
+    public void SetMatch3Phase(bool b)
+    {
+        isMatch3Phase = b;
+    }
+    public void toggleMatch3Phase()
+    {
+        isMatch3Phase = !isMatch3Phase;
     }
 
     public Tile GetTile(Point p)
