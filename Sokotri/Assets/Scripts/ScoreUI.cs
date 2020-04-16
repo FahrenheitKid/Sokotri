@@ -1,5 +1,10 @@
-﻿using TMPro;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
+using DG.Tweening;
+using TMPro;
 
 public class ScoreUI : MonoBehaviour
 {
@@ -17,6 +22,9 @@ public class ScoreUI : MonoBehaviour
 
     [SerializeField]
     private TheGrid grid_ref;
+
+    [SerializeField]
+    CircleBG []circles = new CircleBG[2];
 
     // Start is called before the first frame update
     private void Start()
@@ -53,5 +61,30 @@ public class ScoreUI : MonoBehaviour
             scoreText.color = c;
 
         scoreText.text = val.ToString();
+
+        Colorize(c);
+    }
+
+    
+    public void Colorize(Color32 c)
+    {
+        float h, s, v;
+         Color.RGBToHSV(c,out h, out s,out v);
+
+        s *= Random.Range(0.4f,0.8f);
+
+        Color32 desaturated = Color.HSVToRGB(h, s, v);
+
+        if (!circles.ToList().Any(x => x.IsForeground() != true)) return;
+
+        CircleBG foreground = circles.First(x => x.IsForeground() == true);
+        CircleBG background = circles.First(x => x.IsForeground() == false);
+
+        background.setForeground(true);
+        // background.setForeground(false);
+
+        background.Colorize(desaturated);
+        
+
     }
 }

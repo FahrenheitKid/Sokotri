@@ -27,11 +27,19 @@ public class TriBox : MonoBehaviour
     private bool isRotating = false;
     private bool isMoving = false;
 
+    [SerializeField]
+    AudioClip popSoundClip;
+    [SerializeField]
+    AudioSource audioSource;
+
     // Start is called before the first frame update
     private void Start()
     {
         if (grid_ref == null)
             grid_ref = GameObject.FindGameObjectWithTag("Grid").GetComponent<TheGrid>();
+
+        if (audioSource == null)
+            audioSource = GetComponent<AudioSource>();
     }
 
     public void Init(Tile center, Box.Element[] elements, TheGrid grid = null, bool _isVertical = true)
@@ -47,6 +55,14 @@ public class TriBox : MonoBehaviour
 
         setCenterTile(center);
         resetPosition();
+
+        transform.localScale = Vector3.zero;
+        transform.DOScale(new Vector3(1, 1, 1), TheGrid.moveTime).SetEase(Ease.OutBounce);
+        if(audioSource)
+        {
+            if(audioSource.clip != null)
+            audioSource.Play();
+        }
     }
 
     public void setCenterTile(Tile t)
