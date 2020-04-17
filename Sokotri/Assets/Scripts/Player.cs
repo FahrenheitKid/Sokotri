@@ -92,7 +92,7 @@ public class Player : MonoBehaviour
 
     private bool Move(UtilityTools.Directions dir)
     {
-        if (isMoving == true)
+        if (isMoving == true || grid_ref.IsMatch3Phase())
         {
             return false;
         }
@@ -166,6 +166,18 @@ public class Player : MonoBehaviour
             }
 
             return false;
+        }
+    }
+
+    public void playMissStep()
+    {
+        if (missStepAudioClip)
+        {
+            audioSource.clip = missStepAudioClip;
+            if (audioSource.clip == missStepAudioClip)
+            {
+                audioSource.Play();
+            }
         }
     }
 

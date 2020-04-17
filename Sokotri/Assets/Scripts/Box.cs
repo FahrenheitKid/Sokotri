@@ -288,7 +288,7 @@ public class Box : MonoBehaviour
         return matches;
     }
 
-    public void Swap(Box b)
+    public void Swap(Box b, System.Action onCompleteAction = null, System.Action otherOnCompleteAction = null)
     {
         if (b == null) return;
 
@@ -298,8 +298,79 @@ public class Box : MonoBehaviour
         b.setTile(myTile, Tile.Status.box);
         setTile(otherTile, Tile.Status.box);
 
-        b.MoveTo(grid_ref.getExpectedPositionFromPoint(b.GetPoint()));
-        MoveTo(grid_ref.getExpectedPositionFromPoint(GetPoint()));
+        b.MoveTo(grid_ref.getExpectedPositionFromPoint(b.GetPoint()), true, true, true, otherOnCompleteAction);
+        MoveTo(grid_ref.getExpectedPositionFromPoint(GetPoint()), true, true, true, onCompleteAction);
+    }
+
+    public void TrySwap(Box b)
+    {
+        if (b == null) return;
+
+        Tile otherTile = b.GetTile();
+        Tile myTile = tile;
+
+        string originalP = GetPoint().print();
+        b.setTile(myTile, Tile.Status.box);
+        setTile(otherTile, Tile.Status.box);
+
+        List<List<Box>> otherMatches = b.getAllConnectedMatches();
+        otherMatches = otherMatches.Distinct(new ListEqualityComparer<Box>(new BoxElementEqualityComparer())).ToList();
+
+        List<List<Box>> myMatches = getAllConnectedMatches();
+        myMatches = myMatches.Distinct(new ListEqualityComparer<Box>(new BoxElementEqualityComparer())).ToList();
+
+        // combine the two and remove duplicates
+        List<List<Box>> resultMatches = myMatches.Concat(otherMatches).Distinct().ToList();
+
+        //remove empty/invalid matches
+        resultMatches.RemoveAll(x => x.Count < TheGrid.matchSize);
+
+        if (resultMatches.Any()) // if any of the moved boxes has matches, maintain the swap and score!
+        {
+            grid_ref.Match(resultMatches);
+
+            b.MoveTo(grid_ref.getExpectedPositionFromPoint(b.GetPoint()));
+            MoveTo(grid_ref.getExpectedPositionFromPoint(GetPoint()), true, true, true, () => { });
+
+            Highlight(false);
+            transform.DOScale(Vector3.one, TheGrid.moveTime);
+
+            grid_ref.GetMatch3().SetMovingBox(null);
+            //  print("FoundMatches after first swap completed!");
+        }
+        else
+        {
+            // reset original tiles
+            b.setTile(otherTile, Tile.Status.box);
+            setTile(myTile, Tile.Status.box);
+
+            print("nao deu match!");
+            // print("Was " + originalP + "now I am" + GetPoint().print());
+            b.MoveTo(grid_ref.getExpectedPositionFromPoint(GetPoint()));
+            MoveTo(grid_ref.getExpectedPositionFromPoint(b.GetPoint()), true, true, true, () => { });
+
+            this.AttachTimer(TheGrid.moveTime, () =>
+            {
+                //need to swap and swap animation only
+                //  print("swapping back" + "i am at " + transform.position + "before moving to " + grid_ref.getExpectedPositionFromPoint(b.GetPoint()));
+                //  print("I should be at" + )
+                b.MoveTo(grid_ref.getExpectedPositionFromPoint(b.GetPoint()));
+                MoveTo(grid_ref.getExpectedPositionFromPoint(GetPoint()), true, true, true, () => { });
+
+                Highlight(false);
+                transform.DOScale(Vector3.one, TheGrid.moveTime);
+                grid_ref.GetMatch3().SetMovingBox(null);
+
+                grid_ref.GetPlayer().playMissStep();
+            });
+
+            //Swap(b, () => {
+            //    grid_ref.GetMatch3().SetMovingBox(null);
+            //    print("completed unswapp");
+            //});
+
+            //grid_ref.GetMatch3().SetMovingBox(null);
+        }
     }
 
     //from a list of points in the same axis, return the first connected matches
@@ -983,7 +1054,37 @@ public class Box : MonoBehaviour
         }
     }
 
-    public void MoveTo(Vector2 destination, bool global = true, bool tween = true, bool tempRemoveParent = true)
+    public void OnMouseEnter()
+    {
+        if (grid_ref.IsMatch3Phase())
+        {
+            if (grid_ref.GetMatch3().GetMovingBox() != this && !Input.GetMouseButton(0))
+            {
+                Highlight(true);
+                Vector3 temp = transform.position;
+                temp.z = -2;
+                transform.position = temp;
+                transform.DOScale(new Vector3(1.2f, 1.2f, 1), TheGrid.moveTime);
+            }
+        }
+    }
+
+    public void OnMouseExit()
+    {
+        if (grid_ref.IsMatch3Phase())
+        {
+            if (grid_ref.GetMatch3().GetMovingBox() != this || grid_ref.GetMatch3().GetMovingBox() == null)
+            {
+                Highlight(false);
+                transform.DOScale(Vector3.one, TheGrid.moveTime);
+                Vector3 temp = transform.position;
+                temp.z = -1;
+                transform.position = temp;
+            }
+        }
+    }
+
+    public void MoveTo(Vector3 destination, bool global = true, bool tween = true, bool tempRemoveParent = true, System.Action onCompleteAction = null)
     {
         if (matchMoveTween != null)
         {
@@ -992,6 +1093,7 @@ public class Box : MonoBehaviour
                 matchMoveTween.Kill();
             }
         }
+
         Transform par = transform.parent;
         if (tempRemoveParent)
         {
@@ -1001,11 +1103,11 @@ public class Box : MonoBehaviour
         {
             if (tween)
             {
-                matchMoveTween = transform.DOMove(destination + (Vector2)transform.parent.position, TheGrid.moveTime).SetEase(Ease.OutQuart);
+                matchMoveTween = transform.DOMove(destination + transform.parent.position, TheGrid.moveTime).SetEase(Ease.OutQuart);
             }
             else
             {
-                transform.position = destination + (Vector2)transform.parent.position;
+                transform.position = destination + transform.parent.position;
             }
         }
         else if (transform.parent == null && global)
@@ -1023,11 +1125,11 @@ public class Box : MonoBehaviour
         {
             if (tween)
             {
-                matchMoveTween = transform.DOLocalMove(destination + (Vector2)transform.parent.position, TheGrid.moveTime).SetEase(Ease.OutQuart);
+                matchMoveTween = transform.DOLocalMove(destination + (Vector3)transform.parent.position, TheGrid.moveTime).SetEase(Ease.OutQuart);
             }
             else
             {
-                transform.localPosition = destination + (Vector2)transform.parent.position;
+                transform.localPosition = destination + (Vector3)transform.parent.position;
             }
         }
 
@@ -1040,6 +1142,11 @@ public class Box : MonoBehaviour
             }
             else
                 transform.parent = par;
+        }
+
+        if (matchMoveTween != null && onCompleteAction != null)
+        {
+            matchMoveTween.OnComplete(() => onCompleteAction());
         }
     }
 

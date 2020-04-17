@@ -16,6 +16,9 @@ public class TheGrid : MonoBehaviour
     private Player player;
 
     [SerializeField]
+    private Match3 match3_ref;
+
+    [SerializeField]
     private PreviewBoxes previewBoxes;
 
     [SerializeField]
@@ -86,6 +89,9 @@ public class TheGrid : MonoBehaviour
 
         if (scoreUI == null)
             scoreUI = GameObject.FindGameObjectWithTag("Score").GetComponent<ScoreUI>();
+
+        if (match3_ref == null)
+            match3_ref = GetComponent<Match3>();
 
         if (audioSource == null)
             audioSource = GetComponent<AudioSource>();
@@ -188,7 +194,7 @@ public class TheGrid : MonoBehaviour
 
             if (!spawnableTiles.Any() || triboxesInsideSafe.Any())
             {
-                print("no free spawn position available");
+                // print("no free spawn position available");
                 return;
             }
             center = spawnableTiles[Random.Range(0, spawnableTiles.Count)];
@@ -207,7 +213,7 @@ public class TheGrid : MonoBehaviour
 
     public void Match(List<List<Box>> boxMatchesList)
     {
-        if (!boxMatchesList.Any()) return;
+        if (!boxMatchesList.Any() || !boxMatchesList.Any(x => x.Count >= TheGrid.matchSize)) return;
 
         int uniqueElementMatches = 0;
         uniqueElementMatches = boxMatchesList.SelectMany(x => x).Distinct() // get the lists of lists in a single list
@@ -243,7 +249,10 @@ public class TheGrid : MonoBehaviour
 
         totalScore *= uniqueElementMatches;
         Color32 colorOfBiggestElementMatch = new Color();
-        colorOfBiggestElementMatch = Box.getElementColor(boxMatchesList.OrderByDescending(item => item.Count).First().First(x => x.GetElement() != Box.Element.quintessential).GetElement());
+
+        Box boxWithTheElement = boxMatchesList.OrderByDescending(item => item.Count).First().First(x => x.GetElement() != Box.Element.quintessential);
+
+        colorOfBiggestElementMatch = (boxWithTheElement != null) ? Box.getElementColor(boxWithTheElement.GetElement()) : (Color32)Color.white;
 
         Score(totalScore, colorOfBiggestElementMatch);
 
@@ -316,6 +325,16 @@ public class TheGrid : MonoBehaviour
     public bool IsMuted()
     {
         return isMuted;
+    }
+
+    public Match3 GetMatch3()
+    {
+        return match3_ref;
+    }
+
+    public Player GetPlayer()
+    {
+        return player;
     }
 
     public Tile GetTile(Point p)

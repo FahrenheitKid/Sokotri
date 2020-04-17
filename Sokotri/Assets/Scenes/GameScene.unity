@@ -636,8 +636,8 @@ MonoBehaviour:
   autoEnableOutlines: 1
   outlineCamera: {fileID: 1935210948}
   outlineShaderMaterial: {fileID: 0}
-  renderTexture: {fileID: 1841602016}
-  extraRenderTexture: {fileID: 873108800}
+  renderTexture: {fileID: 803650658}
+  extraRenderTexture: {fileID: 1497639270}
 --- !u!20 &519420031
 Camera:
   m_ObjectHideFlags: 0
@@ -936,7 +936,7 @@ MonoBehaviour:
   music: {fileID: 8300000, guid: 857620ccd5ac865448d1b2225af0e2ee, type: 3}
   audioSource: {fileID: 0}
   audioVolume: 0.54
-  isMuted: 0
+  isMuted: 1
   grid_ref: {fileID: 1583731895}
   player: {fileID: 791061558}
 --- !u!114 &791061558 stripped
@@ -951,7 +951,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ff342e12422e7a42833b816d526cd1a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!84 &873108800
+--- !u!84 &803650658
 RenderTexture:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1927,6 +1927,41 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1319024076}
   m_CullTransparentMesh: 0
+--- !u!84 &1497639270
+RenderTexture:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_ImageContentsHash:
+    serializedVersion: 2
+    Hash: 00000000000000000000000000000000
+  m_ForcedFallbackFormat: 4
+  m_DownscaleFallback: 0
+  serializedVersion: 3
+  m_Width: 1920
+  m_Height: 1080
+  m_AntiAliasing: 1
+  m_MipCount: -1
+  m_DepthFormat: 1
+  m_ColorFormat: 8
+  m_MipMap: 0
+  m_GenerateMips: 1
+  m_SRGB: 0
+  m_UseDynamicScale: 0
+  m_BindMS: 0
+  m_EnableCompatibleFormat: 1
+  m_TextureSettings:
+    serializedVersion: 2
+    m_FilterMode: 1
+    m_Aniso: 1
+    m_MipBias: 0
+    m_WrapU: 1
+    m_WrapV: 1
+    m_WrapW: 1
+  m_Dimension: 2
+  m_VolumeDepth: 1
 --- !u!1 &1533430104
 GameObject:
   m_ObjectHideFlags: 0
@@ -2121,6 +2156,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   boxes: []
   player: {fileID: 791061558}
+  match3_ref: {fileID: 1583731898}
   previewBoxes: {fileID: 1726239326}
   scoreUI: {fileID: 336419866}
   tile_Prefab: {fileID: 5601306694358520116, guid: a10702de4d2cfbb4bbed893ef00ebfdc,
@@ -2138,7 +2174,7 @@ MonoBehaviour:
   matchAudioClip: {fileID: 8300000, guid: 22fc56ca23c90274a871bc1ec398c9ad, type: 3}
   audioSource: {fileID: 1583731897}
   audioVolume: 0
-  isMuted: 0
+  isMuted: 1
 --- !u!4 &1583731896
 Transform:
   m_ObjectHideFlags: 0
@@ -2275,7 +2311,7 @@ MonoBehaviour:
   add:
     x: 0
     y: 0
-  pos: {x: 0, y: 0}
+  pos: {x: 0, y: 0, z: 0}
 --- !u!1 &1667295469
 GameObject:
   m_ObjectHideFlags: 0
@@ -2576,41 +2612,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   color: 0
   eraseRenderer: 0
---- !u!84 &1841602016
-RenderTexture:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_ForcedFallbackFormat: 4
-  m_DownscaleFallback: 0
-  serializedVersion: 3
-  m_Width: 1920
-  m_Height: 1080
-  m_AntiAliasing: 1
-  m_MipCount: -1
-  m_DepthFormat: 1
-  m_ColorFormat: 8
-  m_MipMap: 0
-  m_GenerateMips: 1
-  m_SRGB: 0
-  m_UseDynamicScale: 0
-  m_BindMS: 0
-  m_EnableCompatibleFormat: 1
-  m_TextureSettings:
-    serializedVersion: 2
-    m_FilterMode: 1
-    m_Aniso: 1
-    m_MipBias: 0
-    m_WrapU: 1
-    m_WrapV: 1
-    m_WrapW: 1
-  m_Dimension: 2
-  m_VolumeDepth: 1
 --- !u!1 &1899043445
 GameObject:
   m_ObjectHideFlags: 0
@@ -2749,7 +2750,7 @@ Camera:
     serializedVersion: 2
     m_Bits: 0
   m_RenderingPath: 1
-  m_TargetTexture: {fileID: 1841602016}
+  m_TargetTexture: {fileID: 803650658}
   m_TargetDisplay: 0
   m_TargetEye: 0
   m_HDR: 0
