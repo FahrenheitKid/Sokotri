@@ -133,7 +133,26 @@ public class Match3 : MonoBehaviour
         if (movingBox == null || !grid_ref.IsMatch3Phase()) return;
 
         if (destinationPoint == null || destination == null) return;
-        if (destinationPoint.Equals(movingBox.GetPoint().Clone()) || !destination.isMatchable())
+
+        bool cannotMatch = false;
+
+        if (destination.GetBox() != null)
+        {
+            if (destination.GetBox().GetTriBox() != null)
+            {
+                cannotMatch = !destination.GetBox().GetTriBox().isMatchable();
+            }
+        }
+
+        if (cannotMatch == false)
+        {
+            if (movingBox != null)
+            {
+                cannotMatch = !movingBox.GetTriBox().isMatchable();
+            }
+        }
+
+        if (destinationPoint.Equals(movingBox.GetPoint().Clone()) || !destination.isMatchable() || !movingBox.GetTile().isMatchable() || cannotMatch == true)
         {
             // movingBox.MoveTo(grid_ref.getExpectedPositionFromPoint(movingBox.GetPoint()));
             movingBox.MoveTo(grid_ref.getExpectedPositionFromPoint(movingBox.GetPoint()), true, true, true, () => { });

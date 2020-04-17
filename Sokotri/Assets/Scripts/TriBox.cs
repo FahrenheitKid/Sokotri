@@ -662,6 +662,18 @@ public class TriBox : MonoBehaviour
         }
     }
 
+    public bool isMatchable()
+    {
+        foreach (Box b in boxes)
+        {
+            if (b != null)
+            {
+                if (b.GetTile().isMatchable() == false) return false;
+            }
+        }
+        return true;
+    }
+
     public void Highlight(bool on)
     {
         if (isHighlighted == on) return;

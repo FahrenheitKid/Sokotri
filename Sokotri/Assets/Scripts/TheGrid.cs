@@ -148,8 +148,8 @@ public class TheGrid : MonoBehaviour
 #if UNITY_WEBGL
         loadGridLayoutFromArray(defaultLayoutMap);
 #endif
-        
-        if(gridLayout == null)
+
+        if (gridLayout == null)
         {
             loadGridLayoutFromArray(defaultLayoutMap);
         }
@@ -296,7 +296,13 @@ public class TheGrid : MonoBehaviour
             tri.Kill();
         }
 
-        totalScore *= uniqueElementMatches;
+        int multiplier = 1;
+
+        if (TheGrid.matchSize > 0)
+            multiplier = totalScore / TheGrid.matchSize;
+        if (multiplier < 1) multiplier = 1;
+
+        totalScore *= (uniqueElementMatches + multiplier < 2) ? 1 : uniqueElementMatches + multiplier;
         Color32 colorOfBiggestElementMatch = new Color();
 
         Box boxWithTheElement = null;
