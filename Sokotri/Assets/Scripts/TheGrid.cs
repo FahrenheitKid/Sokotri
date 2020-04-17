@@ -1,9 +1,9 @@
+using DG.Tweening;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using DG.Tweening;
 
 public class TheGrid : MonoBehaviour
 {
@@ -68,6 +68,9 @@ public class TheGrid : MonoBehaviour
     private int score = 0;
 
     [SerializeField]
+    private int match3Uses = 3;
+
+    [SerializeField]
     private bool isMatch3Phase = false;
 
     [Header("Audio")]
@@ -84,6 +87,13 @@ public class TheGrid : MonoBehaviour
     private bool isMuted = false;
 
     //check i seed
+
+    private void Awake()
+    {
+        // Make the game run as fast as possible
+        Application.targetFrameRate = 60;
+        Screen.SetResolution(1920, 1080, true);
+    }
 
     // Start is called before the first frame update
     private void Start()
@@ -226,7 +236,8 @@ public class TheGrid : MonoBehaviour
         //need to substract 1 for each quintessential present in the matches
         int quintOffset = boxMatchesList.FindAll(x => x.FindAll(b => b.GetElement() == Box.Element.quintessential).Any()).Count();
         uniqueElementMatches -= quintOffset;
-        if (uniqueElementMatches < 0) uniqueElementMatches = 1;
+
+        if (uniqueElementMatches <= 0) uniqueElementMatches = 1;
 
         int totalScore = 0;
 
@@ -254,9 +265,14 @@ public class TheGrid : MonoBehaviour
         totalScore *= uniqueElementMatches;
         Color32 colorOfBiggestElementMatch = new Color();
 
-        Box boxWithTheElement = boxMatchesList.OrderByDescending(item => item.Count).First().First(x => x.GetElement() != Box.Element.quintessential);
+        Box boxWithTheElement = null;
 
-        colorOfBiggestElementMatch = (boxWithTheElement != null) ? Box.getElementColor(boxWithTheElement.GetElement()) : (Color32)Color.white;
+        if (boxMatchesList.OrderByDescending(item => item.Count).First().Any(x => x.GetElement() != Box.Element.quintessential))
+            boxWithTheElement = boxMatchesList.OrderByDescending(item => item.Count).First().First(x => x.GetElement() != Box.Element.quintessential);
+
+        if (boxWithTheElement == null) totalScore *= totalScore;
+
+        colorOfBiggestElementMatch = (boxWithTheElement != null) ? Box.getElementColor(boxWithTheElement.GetElement()) : Box.getElementColor(Box.Element.quintessential); ;
 
         Score(totalScore, colorOfBiggestElementMatch);
 
@@ -316,38 +332,68 @@ public class TheGrid : MonoBehaviour
         isMatch3Phase = b;
     }
 
+    public int getMatch3Uses()
+    {
+        return match3Uses;
+    }
+
     public void toggleMatch3Phase()
     {
+        if (match3Uses < 0 && isMatch3Phase || match3_ref.GetMovingBox() != null) return;
+
         isMatch3Phase = !isMatch3Phase;
+
+        if (isMatch3Phase)
+        {
+            match3Uses--;
+            if (match3Uses < 0) match3Uses = 0;
+
+            scoreUI.UpdateMatch3Uses(match3Uses);
+        }
+        else
+        {
+            foreach (Box b in UtilityTools.FindComponentsWithTag<Box>("Box"))
+            {
+                if (b.isHighlighted) b.Highlight(false);
+
+                if (b.transform.localScale.x > 1)
+                {
+                    if (b.GetKillSequence() != null)
+                    {
+                        if (b.GetKillSequence().IsPlaying()) continue;
+                    }
+
+                    b.transform.DOScale(Vector3.one, TheGrid.moveTime);
+                    Vector3 temp = b.transform.position;
+                    temp.z = -1;
+                    b.transform.position = temp;
+                }
+            }
+        }
 
         //darrken some sprites when in this mode
         float h, s, v;
 
         if (gridLayout_ref)
+        {
+            foreach (Transform go in gridLayout_ref.transform)
             {
-                foreach (Transform go in gridLayout_ref.transform)
+                SpriteRenderer tile = go.GetComponent<SpriteRenderer>();
+                if (tile != null)
                 {
-                    SpriteRenderer tile = go.GetComponent<SpriteRenderer>();
-                    if(tile !=null)
-                    {
+                    Color normal = Tile.getKindColor(go.GetComponent<Tile>().GetKind());
 
-                        Color normal = Tile.getKindColor( go.GetComponent<Tile>().GetKind());
-
-                   
                     Color.RGBToHSV(normal, out h, out s, out v);
 
                     v *= 0.5f;
 
                     Color desaturated = Color.HSVToRGB(h, s, v);
-                    
-                    tile.DOColor((isMatch3Phase) ? desaturated : normal, TheGrid.moveTime * 2);
 
+                    tile.DOColor((isMatch3Phase) ? desaturated : normal, TheGrid.moveTime * 2);
                 }
-                }
-               
             }
-                player.GetComponent<SpriteRenderer>().DOColor((isMatch3Phase) ? Color.gray : Color.white, TheGrid.moveTime * 2);
-        
+        }
+        player.GetComponent<SpriteRenderer>().DOColor((isMatch3Phase) ? Color.gray : Color.white, TheGrid.moveTime * 2);
     }
 
     public void ToggleMute()

@@ -117,7 +117,6 @@ public class Tile : MonoBehaviour
         else
         {
             return Color.white;
-           
         }
     }
 

@@ -1,6 +1,8 @@
-﻿using System.Linq;
+﻿using DG.Tweening;
+using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ScoreUI : MonoBehaviour
 {
@@ -17,6 +19,18 @@ public class ScoreUI : MonoBehaviour
     private TextMeshProUGUI highScoreText;
 
     [SerializeField]
+    private TextMeshProUGUI Match3ModeTitle;
+
+    [SerializeField]
+    private TextMeshProUGUI Match3ModeText;
+
+    [SerializeField]
+    private TextMeshProUGUI helpText;
+
+    [SerializeField]
+    private Image helpBG;
+
+    [SerializeField]
     private Color32 scoreTextColor;
 
     [SerializeField]
@@ -29,6 +43,10 @@ public class ScoreUI : MonoBehaviour
     private CircleBG[] circles = new CircleBG[2];
 
     private int currentHighScore = 0;
+
+    public bool isRainbow = false;
+
+    public bool isHelpOn = false;
 
     // Start is called before the first frame update
     private void Start()
@@ -47,20 +65,14 @@ public class ScoreUI : MonoBehaviour
 
         if (highScoreText)
             highScoreText.text = currentHighScore.ToString();
+
+        if (Match3ModeText)
+            Match3ModeText.text = grid_ref.getMatch3Uses().ToString();
     }
 
     // Update is called once per frame
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Y))
-        {
-            //  UpdateScore(1, Box.getElementColor(Box.Element.fire));
-        }
-
-        if (Input.GetKeyDown(KeyCode.U))
-        {
-            //  UpdateScore(1, new Color32(231, 76, 60, 255));
-        }
     }
 
     public void UpdateScore(int val, Color32 c)
@@ -76,10 +88,29 @@ public class ScoreUI : MonoBehaviour
             UtilityTools.updateTextWithPunch(highScoreText, currentHighScore.ToString(), scoreText.transform.localScale / 1.8f, TheGrid.moveTime, true);
         }
 
-        Colorize(c);
+        Color32 quinColor = Box.getElementColor(Box.Element.quintessential);
+
+        if (c.r == quinColor.r && c.g == quinColor.g && c.b == quinColor.b)
+        {
+            isRainbow = true;
+        }
+        else
+        {
+            if (isRainbow) isRainbow = false;
+        }
+
+        Colorize(c, isRainbow);
     }
 
-    public void Colorize(Color32 c)
+    public void UpdateMatch3Uses(int val)
+    {
+        if (Match3ModeText != null)
+        {
+            UtilityTools.updateTextWithPunch(Match3ModeText, val.ToString(), Match3ModeText.transform.localScale / 1.8f, TheGrid.moveTime, true);
+        }
+    }
+
+    public void Colorize(Color32 c, bool rainbow)
     {
         float h, s, v;
         Color.RGBToHSV(c, out h, out s, out v);
@@ -96,6 +127,26 @@ public class ScoreUI : MonoBehaviour
         background.setForeground(true);
         // background.setForeground(false);
 
-        background.Colorize(desaturated);
+        background.Colorize(desaturated, rainbow);
+    }
+
+    public void ToggleHelp()
+    {
+        isHelpOn = !isHelpOn;
+
+        if (helpText == null || helpBG == null) return;
+
+        if (isHelpOn)
+        {
+            helpText.DOColor(Color.white, TheGrid.moveTime * 3);
+            Color black = Color.black;
+            black.a = 0.8f;
+            helpBG.DOColor(black, TheGrid.moveTime * 3);
+        }
+        else
+        {
+            helpText.DOColor(Color.clear, TheGrid.moveTime * 3);
+            helpBG.DOColor(Color.clear, TheGrid.moveTime * 3);
+        }
     }
 }

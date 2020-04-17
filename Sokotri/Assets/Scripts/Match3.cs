@@ -51,16 +51,6 @@ public class Match3 : MonoBehaviour
     {
         if (!grid_ref.IsMatch3Phase()) return;
 
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            if (movingBox)
-            {
-                Point p = movingBox.GetPoint().Clone();
-                p.Add(2, 0);
-                movingBox.MoveTo(grid_ref.getExpectedPositionFromPoint(p) + (Vector2)grid_ref.transform.position, true, false, true);
-            }
-        }
-
         handleMouseMovement();
 
         // handleMouse2();

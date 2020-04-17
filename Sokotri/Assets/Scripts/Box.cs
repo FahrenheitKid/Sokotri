@@ -66,8 +66,10 @@ public class Box : MonoBehaviour
     [SerializeField]
     private Tween matchMoveTween;
 
+    private Sequence killSequence;
+
     //probability of each type of box
-    private static float[] typeWeights = { 18, 18, 18, 18, 18, 100 };
+    private static float[] typeWeights = { 18, 18, 18, 18, 18, 10 };
 
     // Start is called before the first frame update
     private void Start()
@@ -424,6 +426,7 @@ public class Box : MonoBehaviour
         {
             if (i < selected.Count - 1)
             {
+                if (i + 1 >= selected.Count) continue;
                 //is the next on the list connected to me?
                 if (selected[i].isMyNeighbour(selected[i + 1], false) == true)
                 {
@@ -452,6 +455,12 @@ public class Box : MonoBehaviour
         Box.Element matchElement = this.element;
         List<Box> result = new List<Box>();
 
+        int maxLoops = 0;
+        if (matchElement == Box.Element.quintessential)
+        {
+            print("roxo!");
+        }
+
         if (UtilityTools.horizontals.Contains(axisDir))
         {
             if (getNeighbourTile(UtilityTools.Directions.right) == null && getNeighbourTile(UtilityTools.Directions.left) == null) return result;
@@ -464,13 +473,13 @@ public class Box : MonoBehaviour
             {
                 Element leftElement = Element.quintessential;
                 Element rightElement = Element.quintessential;
-                Box neigh = getNextNonElementNeighbour(UtilityTools.Directions.right, this.element);
+                Box neigh = getNextNonElementNeighbour(UtilityTools.Directions.right, this.element, ref maxLoops);
                 if (neigh != null)
                 {
                     rightElement = neigh.GetElement();
                 }
 
-                neigh = getNextNonElementNeighbour(UtilityTools.Directions.left, this.element);
+                neigh = getNextNonElementNeighbour(UtilityTools.Directions.left, this.element, ref maxLoops);
 
                 if (neigh != null)
                 {
@@ -490,29 +499,39 @@ public class Box : MonoBehaviour
 
                     bool leftPass = false;
                     bool rightPass = false;
-                    if (areAllConnected(axisDir, mixedLeft) && mixedLeft.Count >= TheGrid.matchSize)
+
+                    //if (areAllConnected(axisDir, mixedLeft) && mixedLeft.Count >= TheGrid.matchSize)
+                    //{
+                    //    result.AddRange(mixedLeft);
+                    //    leftPass = true;
+                    //}
+                    //if (areAllConnected(axisDir, mixedRight) && mixedRight.Count >= TheGrid.matchSize)
+                    //{
+                    //    rightPass = true;
+                    //}
+
+                    //if (rightPass)
+                    //{
+                    //    if ((leftPass && mixedRight.Count > mixedLeft.Count) || leftPass == false)
+                    //    {
+                    //        result.AddRange(mixedRight);
+                    //    }
+                    //}
+                    //else if (leftPass)
+                    //{
+                    //    if ((rightPass && mixedRight.Count < mixedLeft.Count) || rightPass == false)
+                    //    {
+                    //        result.AddRange(mixedRight);
+                    //    }
+                    //}
+
+                    if (mixedLeft.Count >= TheGrid.matchSize && mixedRight.Count < mixedLeft.Count)
                     {
                         result.AddRange(mixedLeft);
-                        leftPass = true;
                     }
-                    if (areAllConnected(axisDir, mixedRight) && mixedRight.Count >= TheGrid.matchSize)
+                    else if (mixedRight.Count >= TheGrid.matchSize && mixedRight.Count > mixedLeft.Count)
                     {
-                        rightPass = true;
-                    }
-
-                    if (rightPass)
-                    {
-                        if ((leftPass && mixedRight.Count > mixedLeft.Count) || leftPass == false)
-                        {
-                            result.AddRange(mixedRight);
-                        }
-                    }
-                    else if (leftPass)
-                    {
-                        if ((rightPass && mixedRight.Count < mixedLeft.Count) || rightPass == false)
-                        {
-                            result.AddRange(mixedRight);
-                        }
+                        result.AddRange(mixedRight);
                     }
 
                     if (result.Count < TheGrid.matchSize || result.Any(y => y.isMatchable() == false))
@@ -558,13 +577,13 @@ public class Box : MonoBehaviour
             {
                 Element downElement = Element.quintessential;
                 Element upElement = Element.quintessential;
-                Box neigh = getNextNonElementNeighbour(UtilityTools.Directions.up, this.element);
+                Box neigh = getNextNonElementNeighbour(UtilityTools.Directions.up, this.element, ref maxLoops);
                 if (neigh != null)
                 {
                     upElement = neigh.GetElement();
                 }
 
-                neigh = getNextNonElementNeighbour(UtilityTools.Directions.down, this.element);
+                neigh = getNextNonElementNeighbour(UtilityTools.Directions.down, this.element, ref maxLoops);
 
                 if (neigh != null)
                 {
@@ -584,29 +603,38 @@ public class Box : MonoBehaviour
 
                     bool downPass = false;
                     bool upPass = false;
-                    if (areAllConnected(axisDir, mixedDown) && mixedDown.Count >= TheGrid.matchSize)
+                    //if (areAllConnected(axisDir, mixedDown) && mixedDown.Count >= TheGrid.matchSize)
+                    //{
+                    //    result.AddRange(mixedDown);
+                    //    downPass = true;
+                    //}
+                    //if (areAllConnected(axisDir, mixedUp) && mixedUp.Count >= TheGrid.matchSize)
+                    //{
+                    //    upPass = true;
+                    //}
+
+                    //if (upPass)
+                    //{
+                    //    if ((downPass && mixedUp.Count > mixedDown.Count) || downPass == false)
+                    //    {
+                    //        result.AddRange(mixedUp);
+                    //    }
+                    //}
+                    //else if (downPass)
+                    //{
+                    //    if ((upPass && mixedUp.Count < mixedDown.Count) || upPass == false)
+                    //    {
+                    //        result.AddRange(mixedUp);
+                    //    }
+                    //}
+
+                    if (mixedUp.Count >= TheGrid.matchSize && mixedUp.Count > mixedDown.Count)
+                    {
+                        result.AddRange(mixedUp);
+                    }
+                    else if (mixedDown.Count >= TheGrid.matchSize && mixedDown.Count > mixedUp.Count)
                     {
                         result.AddRange(mixedDown);
-                        downPass = true;
-                    }
-                    if (areAllConnected(axisDir, mixedUp) && mixedUp.Count >= TheGrid.matchSize)
-                    {
-                        upPass = true;
-                    }
-
-                    if (upPass)
-                    {
-                        if ((downPass && mixedUp.Count > mixedDown.Count) || downPass == false)
-                        {
-                            result.AddRange(mixedUp);
-                        }
-                    }
-                    else if (downPass)
-                    {
-                        if ((upPass && mixedUp.Count < mixedDown.Count) || upPass == false)
-                        {
-                            result.AddRange(mixedUp);
-                        }
                     }
 
                     if (result.Count < TheGrid.matchSize || result.Any(y => y.isMatchable() == false))
@@ -676,16 +704,27 @@ public class Box : MonoBehaviour
     }
 
     //return the next connected neighbour in that direction that is NOT that element
-    public Box getNextNonElementNeighbour(UtilityTools.Directions dir, Element el)
+    public Box getNextNonElementNeighbour(UtilityTools.Directions dir, Element el, ref int maxLoops)
     {
+        maxLoops++;
+        if (maxLoops > grid_ref.getWidth() && maxLoops > grid_ref.getHeight()) return null;
+
         Tile t = getNeighbourTile(dir);
 
         if (t == null) return null;
 
+        if (t.GetBox() == null || t.GetStatus() != Tile.Status.box)
+        {
+            return null;
+        }
+
         if (t.GetBox() != null && t.GetStatus() == Tile.Status.box)
         {
             if (t.GetBox().GetElement() != el) return t.GetBox();
-            else getNextNonElementNeighbour(dir, el);
+            else if (getNextNonElementNeighbour(dir, el, ref maxLoops) == null)
+            {
+                return null;
+            }
         }
 
         return null;
@@ -734,6 +773,11 @@ public class Box : MonoBehaviour
     public Tile GetTile()
     {
         return tile;
+    }
+
+    public Sequence GetKillSequence()
+    {
+        return killSequence;
     }
 
     public Element GetElement()
@@ -1009,7 +1053,7 @@ public class Box : MonoBehaviour
         transform.parent = null;
 
         // Grab a free Sequence to use
-        Sequence killSequence = DOTween.Sequence();
+        killSequence = DOTween.Sequence();
 
         killSequence.Append(transform.DOPunchScale(transform.localScale, TheGrid.boxKillAnimationTime / 2));
         killSequence.Append(transform.DOScale(Vector3.zero, TheGrid.boxKillAnimationTime / 2));

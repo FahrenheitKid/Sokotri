@@ -55,7 +55,7 @@ public class MusicPlayer : MonoBehaviour
 
     public void ToggleMute()
     {
-        MusicPlayer.ToggleMute(audioSource, ref isMuted, 1f, audioVolume);
+        MusicPlayer.ToggleMute(audioSource, ref isMuted, 0.5f, audioVolume);
     }
 
     public void ToggleMuteMusic()
@@ -71,6 +71,6 @@ public class MusicPlayer : MonoBehaviour
 
         float newVolume = isMuted ? 0 : normalVolume;
 
-        source.DOFade(newVolume, 1f);
+        source.DOFade(newVolume, fadeTime);
     }
 }
