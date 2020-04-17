@@ -36,6 +36,7 @@ public class MusicPlayer : MonoBehaviour
             player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
 
         audioSource.volume = audioVolume;
+        isMuted = false;
     }
 
     // Update is called once per frame
