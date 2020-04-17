@@ -1,10 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using UnityEngine.UI;
-using DG.Tweening;
+﻿using System.Linq;
 using TMPro;
+using UnityEngine;
 
 public class ScoreUI : MonoBehaviour
 {
@@ -13,6 +9,12 @@ public class ScoreUI : MonoBehaviour
 
     [SerializeField]
     private TextMeshProUGUI scoreText;
+
+    [SerializeField]
+    private TextMeshProUGUI highScoreTitle;
+
+    [SerializeField]
+    private TextMeshProUGUI highScoreText;
 
     [SerializeField]
     private Color32 scoreTextColor;
@@ -24,7 +26,9 @@ public class ScoreUI : MonoBehaviour
     private TheGrid grid_ref;
 
     [SerializeField]
-    CircleBG []circles = new CircleBG[2];
+    private CircleBG[] circles = new CircleBG[2];
+
+    private int currentHighScore = 0;
 
     // Start is called before the first frame update
     private void Start()
@@ -39,6 +43,10 @@ public class ScoreUI : MonoBehaviour
             scoreText.color = scoreTextColor;
 
         scoreTitle.color = scoreTitleColor;
+        currentHighScore = PlayerPrefs.GetInt(TheGrid.highScoreKey, 0);
+
+        if (highScoreText)
+            highScoreText.text = currentHighScore.ToString();
     }
 
     // Update is called once per frame
@@ -46,12 +54,12 @@ public class ScoreUI : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Y))
         {
-            UpdateScore(1, Box.getElementColor(Box.Element.fire));
+            //  UpdateScore(1, Box.getElementColor(Box.Element.fire));
         }
 
         if (Input.GetKeyDown(KeyCode.U))
         {
-            UpdateScore(1, new Color32(231, 76, 60, 255));
+            //  UpdateScore(1, new Color32(231, 76, 60, 255));
         }
     }
 
@@ -60,18 +68,23 @@ public class ScoreUI : MonoBehaviour
         if (c != Color.white)
             scoreText.color = c;
 
-        scoreText.text = val.ToString();
+        UtilityTools.updateTextWithPunch(scoreText, val.ToString(), scoreText.transform.localScale / 1.8f, TheGrid.moveTime, true);
+        //scoreText.text = val.ToString();
+        if (val > currentHighScore)
+        {
+            currentHighScore = val;
+            UtilityTools.updateTextWithPunch(highScoreText, currentHighScore.ToString(), scoreText.transform.localScale / 1.8f, TheGrid.moveTime, true);
+        }
 
         Colorize(c);
     }
 
-    
     public void Colorize(Color32 c)
     {
         float h, s, v;
-         Color.RGBToHSV(c,out h, out s,out v);
+        Color.RGBToHSV(c, out h, out s, out v);
 
-        s *= Random.Range(0.4f,0.8f);
+        s *= Random.Range(0.4f, 0.8f);
 
         Color32 desaturated = Color.HSVToRGB(h, s, v);
 
@@ -84,7 +97,5 @@ public class ScoreUI : MonoBehaviour
         // background.setForeground(false);
 
         background.Colorize(desaturated);
-        
-
     }
 }

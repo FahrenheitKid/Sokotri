@@ -107,9 +107,10 @@ MonoBehaviour:
   isMoving: 0
   neighbourTriboxes: []
   lastNeighbourTriboxes: []
-  stepAudioClip: {fileID: 8300000, guid: 18089f79e1853d8469e2ef45c8e175b6, type: 3}
-  missStepAudioClip: {fileID: 8300000, guid: fc5a7cf279602f64ca0fc8f20d80b202, type: 3}
+  stepAudioClip: {fileID: 8300000, guid: 0139c3c53aea33c4a9636e11118ab7ac, type: 3}
+  missStepAudioClip: {fileID: 8300000, guid: 36d9a0d089a0a5d499cded71591137f2, type: 3}
   audioSource: {fileID: 1182759141}
+  audioVolume: 0
 --- !u!82 &1182759141
 AudioSource:
   m_ObjectHideFlags: 0
@@ -122,13 +123,13 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 0.8
+  m_Volume: 0.4
   m_Pitch: 1
   Loop: 0
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
-  Priority: 102
+  Priority: 165
   DopplerLevel: 1
   MinDistance: 1
   MaxDistance: 500

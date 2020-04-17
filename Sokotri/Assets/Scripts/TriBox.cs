@@ -28,9 +28,16 @@ public class TriBox : MonoBehaviour
     private bool isMoving = false;
 
     [SerializeField]
-    AudioClip popSoundClip;
+    private AudioClip popSoundClip;
+
     [SerializeField]
-    AudioSource audioSource;
+    private AudioSource audioSource;
+
+    [SerializeField]
+    private float audioVolume;
+
+    [SerializeField]
+    private bool isMuted = false;
 
     // Start is called before the first frame update
     private void Start()
@@ -40,6 +47,8 @@ public class TriBox : MonoBehaviour
 
         if (audioSource == null)
             audioSource = GetComponent<AudioSource>();
+
+        audioVolume = audioSource.volume;
     }
 
     public void Init(Tile center, Box.Element[] elements, TheGrid grid = null, bool _isVertical = true)
@@ -58,11 +67,24 @@ public class TriBox : MonoBehaviour
 
         transform.localScale = Vector3.zero;
         transform.DOScale(new Vector3(1, 1, 1), TheGrid.moveTime).SetEase(Ease.OutBounce);
-        if(audioSource)
+
+        if (isMuted != grid_ref.IsMuted())
         {
-            if(audioSource.clip != null)
-            audioSource.Play();
+            ToggleMute();
         }
+
+        if (audioSource)
+        {
+            if (audioSource.clip != null && !isMuted)
+            {
+                audioSource.Play();
+            }
+        }
+    }
+
+    public void ToggleMute()
+    {
+        MusicPlayer.ToggleMute(audioSource, ref isMuted, TheGrid.moveTime, audioVolume);
     }
 
     public void setCenterTile(Tile t)
@@ -461,8 +483,6 @@ public class TriBox : MonoBehaviour
                     boxes[i].setTile(destinations[i]);
                 }
             }
-
-            
         }
         else
         {
@@ -550,6 +570,11 @@ public class TriBox : MonoBehaviour
         if (System.Array.FindIndex(boxes, x => x.GetElement() == Box.Element.quintessential) != -1)
         {
             int a = 0;
+        }
+
+        if (boxes.ToList().FindAll(x => x.GetElement() == Box.Element.grass).Count > 1)
+        {
+            print("verdinha 1 real");
         }
 
         for (int i = 0; i < boxes.Length; i++)
@@ -651,14 +676,14 @@ public class TriBox : MonoBehaviour
 
     public bool isOutsideSafeArea()
     {
-        foreach(Box b in boxes)
+        foreach (Box b in boxes)
         {
             if (b == null) continue;
 
             if (b.GetTile() == null) continue;
 
-            if(b.GetTile().GetKind() == Tile.Kind.spawn || b.GetTile().GetKind() == Tile.Kind.management)
-                    return false;
+            if (b.GetTile().GetKind() == Tile.Kind.spawn || b.GetTile().GetKind() == Tile.Kind.management)
+                return false;
         }
 
         return true;

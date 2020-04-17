@@ -1,84 +1,66 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
 using DG.Tweening;
+using UnityEngine;
 
 public class PreviewBoxes : MonoBehaviour
 {
     [SerializeField]
-    Sprite[] sprites = new Sprite[6];
-    SpriteRenderer spriteRenderer; // Start is called before the first frame update
+    private Sprite[] sprites = new Sprite[6];
 
-    Box.Element[] boxes = new Box.Element[3];
+    private SpriteRenderer spriteRenderer; // Start is called before the first frame update
 
-    [SerializeField]
-    GameObject[] boxesRenderers = new GameObject[3];
+    private Box.Element[] boxes = new Box.Element[3];
 
     [SerializeField]
-    float boxAnimationTime = 1.0f;
+    private GameObject[] boxesRenderers = new GameObject[3];
 
-    Sequence vanish;
-    Sequence appear;
+    [SerializeField]
+    private float boxAnimationTime = 1.0f;
 
-    void Start ()
+    private Sequence vanish;
+    private Sequence appear;
+
+    private void Start()
     {
         if (spriteRenderer == null)
-            spriteRenderer = GetComponent<SpriteRenderer> ();
+            spriteRenderer = GetComponent<SpriteRenderer>();
 
         Sequence vanish = DOTween.Sequence();
         Sequence appear = DOTween.Sequence();
-        generateNextPreview ();
+        generateNextPreview();
     }
 
     // Update is called once per frame
-    void Update ()
+    private void Update()
     {
-
     }
 
-    void updateSprites ()
+    private void updateSprites()
     {
-
-
         for (int i = 0; i < boxesRenderers.Length; i++)
         {
-            if ((int) boxes[i] < 0 || (int) boxes[i] >= sprites.Length || i < 0 || i >= boxes.Length) continue;
+            if ((int)boxes[i] < 0 || (int)boxes[i] >= sprites.Length || i < 0 || i >= boxes.Length) continue;
 
-               
-                   
             PreviewBox pb = boxesRenderers[i].GetComponent<PreviewBox>();
-            if(pb)
+            if (pb)
             {
-
                 pb.Vanish(sprites[(int)boxes[i]], boxes[i]);
-
-
-                
-             
             }
-
 
             //boxesRenderers[i].GetComponent<Image>().sprite = sprites[(int)boxes[i]];
             //boxesRenderers[i].GetComponent<Image>().color = (boxes[i] == Box.Element.quintessential) ? Box.quintessentialColor : (Color32)Color.white;
             //print("completou");
         }
-
-      
-
     }
 
-    public void generateNextPreview ()
+    public void generateNextPreview()
     {
-        boxes = Box.getRandomBoxElements (boxes.Length);
+        boxes = Box.getRandomBoxElements(boxes.Length);
 
-        updateSprites ();
-
+        updateSprites();
     }
 
-    public Box.Element[] getCurrentBoxElements ()
+    public Box.Element[] getCurrentBoxElements()
     {
         return boxes;
     }
-
 }

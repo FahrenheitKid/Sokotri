@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
@@ -8,9 +6,9 @@ public class Point
     public int x;
     public int y;
 
-    static public Point zero = new Point (0, 0);
+    static public Point zero = new Point(0, 0);
 
-    public Point (int x_, int y_)
+    public Point(int x_, int y_)
     {
         x = x_;
         y = y_;
@@ -21,10 +19,11 @@ public class Point
         x += p.x;
         y += p.y;
     }
+
     public void Add(int _x, int _y)
     {
         x += _x;
-        y +=_y;
+        y += _y;
     }
 
     public static Point byMagnitude(Point p, int magnitude)
@@ -37,9 +36,9 @@ public class Point
         return new Vector2(x, y);
     }
 
-    public Point getNeighbourPoint (UtilityTools.Directions dir)
+    public Point getNeighbourPoint(UtilityTools.Directions dir)
     {
-        Point p = new Point (x, y);
+        Point p = new Point(x, y);
 
         switch (dir)
         {
@@ -79,28 +78,27 @@ public class Point
                 p.y--;
                 p.x--;
                 break;
-
         }
 
         return p;
     }
 
-    public bool isMyNeighbour (Point p, bool diagonals)
+    public bool isMyNeighbour(Point p, bool diagonals)
     {
-        if (p.Equals (getNeighbourPoint (UtilityTools.Directions.up)) ||
-            p.Equals (getNeighbourPoint (UtilityTools.Directions.down)) ||
-            p.Equals (getNeighbourPoint (UtilityTools.Directions.left)) ||
-            p.Equals (getNeighbourPoint (UtilityTools.Directions.right)))
+        if (p.Equals(getNeighbourPoint(UtilityTools.Directions.up)) ||
+            p.Equals(getNeighbourPoint(UtilityTools.Directions.down)) ||
+            p.Equals(getNeighbourPoint(UtilityTools.Directions.left)) ||
+            p.Equals(getNeighbourPoint(UtilityTools.Directions.right)))
         {
             return true;
         }
 
         if (diagonals)
         {
-            if (p.Equals (getNeighbourPoint (UtilityTools.Directions.upRight)) ||
-                p.Equals (getNeighbourPoint (UtilityTools.Directions.downRight)) ||
-                p.Equals (getNeighbourPoint (UtilityTools.Directions.downLeft)) ||
-                p.Equals (getNeighbourPoint (UtilityTools.Directions.upLeft)))
+            if (p.Equals(getNeighbourPoint(UtilityTools.Directions.upRight)) ||
+                p.Equals(getNeighbourPoint(UtilityTools.Directions.downRight)) ||
+                p.Equals(getNeighbourPoint(UtilityTools.Directions.downLeft)) ||
+                p.Equals(getNeighbourPoint(UtilityTools.Directions.upLeft)))
             {
                 return true;
             }
@@ -109,29 +107,29 @@ public class Point
         return false;
     }
 
-    public void Copy (Point p)
+    public void Copy(Point p)
     {
         x = p.x;
         y = p.y;
     }
-    public bool Equals (Point p)
+
+    public bool Equals(Point p)
     {
         return (p.x == x && p.y == y);
     }
 
-    public Point Clone ()
+    public Point Clone()
     {
-        return new Point (x, y);
+        return new Point(x, y);
     }
 
-    public static Point Clone (Point p)
+    public static Point Clone(Point p)
     {
-        return new Point (p.x, p.y);
+        return new Point(p.x, p.y);
     }
 
-    public string print ()
+    public string print()
     {
         return ("(" + x + ", " + y + ")");
     }
-
 }

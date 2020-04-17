@@ -21,23 +21,27 @@ public class Player : MonoBehaviour
     private bool isMoving = false;
 
     [SerializeField]
-    List<TriBox> neighbourTriboxes;
+    private List<TriBox> neighbourTriboxes;
 
     [SerializeField]
-    List<TriBox> lastNeighbourTriboxes;
+    private List<TriBox> lastNeighbourTriboxes;
 
     [SerializeField]
-    AudioClip stepAudioClip;
+    private AudioClip stepAudioClip;
 
     [SerializeField]
-    AudioClip missStepAudioClip;
+    private AudioClip missStepAudioClip;
 
     [SerializeField]
-    AudioSource audioSource;
+    private AudioSource audioSource;
 
-    bool canMissStepPlay;
+    [SerializeField]
+    private float audioVolume;
 
+    [SerializeField]
+    private bool isMuted = false;
 
+    private bool canMissStepPlay;
 
     // Start is called before the first frame update
     private void Start()
@@ -47,14 +51,14 @@ public class Player : MonoBehaviour
 
         if (audioSource == null)
             audioSource = GetComponent<AudioSource>();
+
+        audioVolume = audioSource.volume;
     }
 
     // Update is called once per frame
     private void Update()
     {
         Move(getInputDirection());
-
-
     }
 
     public void Init(Point spawn, TheGrid grid = null)
@@ -117,7 +121,6 @@ public class Player : MonoBehaviour
             lastIndex.Copy(index);
             setIndex(destination.GetPoint().Clone());
 
-
             lastNeighbourTriboxes = neighbourTriboxes;
             neighbourTriboxes = GetAllNeighbourTriboxes();
             foreach (TriBox tri in neighbourTriboxes)
@@ -125,20 +128,20 @@ public class Player : MonoBehaviour
                 tri.Highlight(true);
             }
 
-            foreach(TriBox tri in lastNeighbourTriboxes)
+            foreach (TriBox tri in lastNeighbourTriboxes)
             {
-                if(!neighbourTriboxes.Contains(tri))
+                if (!neighbourTriboxes.Contains(tri))
                 {
                     tri.Highlight(false);
                 }
             }
 
-            if(stepAudioClip)
+            if (stepAudioClip)
             {
                 audioSource.clip = stepAudioClip;
                 audioSource.Play();
             }
-            
+
             return true;
         }
         else
@@ -155,14 +158,12 @@ public class Player : MonoBehaviour
                         canMissStepPlay = false;
                         audioSource.Play();
                     }
-                    
                 }
             }
-            else if(input == Vector2.zero)
+            else if (input == Vector2.zero)
             {
                 canMissStepPlay = true;
             }
-                
 
             return false;
         }
@@ -367,7 +368,6 @@ public class Player : MonoBehaviour
         {
             Tile t = getNeighbourTile(dir);
 
-
             if (t != null)
             {
                 if (t.GetStatus() == Tile.Status.box && t.GetBox().isInTribox())
@@ -382,8 +382,6 @@ public class Player : MonoBehaviour
 
     public List<TriBox> GetAllNonNeighbourTriboxes(bool diagonals = false)
     {
-
-       
         List<TriBox> result = new List<TriBox>();
         if (grid_ref == null) return result;
 
@@ -416,7 +414,7 @@ public class Player : MonoBehaviour
 
         if (tri.GetBoxes().ToList().Any(x => x == null)) return false;
 
-        foreach(Box b in tri.GetBoxes())
+        foreach (Box b in tri.GetBoxes())
         {
             if (isMyNeighbour(b, true) == false) return false;
         }
@@ -456,6 +454,11 @@ public class Player : MonoBehaviour
         Vector3 pos = transform.position;
         pos.z = -1;
         transform.position = pos;
+    }
+
+    public void ToggleMute()
+    {
+        MusicPlayer.ToggleMute(audioSource, ref isMuted, TheGrid.moveTime, audioVolume);
     }
 
     private UtilityTools.Directions getInputDirection()

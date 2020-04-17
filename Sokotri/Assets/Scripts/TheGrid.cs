@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class TheGrid : MonoBehaviour
 {
@@ -54,19 +55,26 @@ public class TheGrid : MonoBehaviour
     [SerializeField]
     public static float boxKillAnimationTime = 0.35f;
 
+    public static string highScoreKey = "highscore";
+
     [SerializeField]
     private int score = 0;
 
     [SerializeField]
-    bool isMatch3Phase = false;
+    private bool isMatch3Phase = false;
 
     [Header("Audio")]
     [SerializeField]
-    AudioClip matchAudioClip;
+    private AudioClip matchAudioClip;
 
     [SerializeField]
-    AudioSource audioSource;
+    private AudioSource audioSource;
 
+    [SerializeField]
+    private float audioVolume;
+
+    [SerializeField]
+    private bool isMuted = false;
 
     //check i seed
 
@@ -81,6 +89,9 @@ public class TheGrid : MonoBehaviour
 
         if (audioSource == null)
             audioSource = GetComponent<AudioSource>();
+
+        audioVolume = audioSource.volume;
+        isMuted = false;
 
         Random.InitState(seed.GetHashCode());
 
@@ -111,11 +122,11 @@ public class TheGrid : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
-       
-
-        if (Input.GetKeyDown(KeyCode.P))
+        if (Input.GetKeyDown(KeyCode.R))
         {
             //spawnTriBox(previewBoxes.getCurrentBoxElements());
+            //previewBoxes.generateNextPreview();
+            RestartGame();
         }
 
         if (Input.GetKeyDown(KeyCode.Escape))
@@ -127,6 +138,14 @@ public class TheGrid : MonoBehaviour
         {
             toggleMatch3Phase();
         }
+    }
+
+    public void RestartGame()
+    {
+        if (PlayerPrefs.GetInt(highScoreKey, 0) < score)
+            PlayerPrefs.SetInt(highScoreKey, score);
+
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     private void setupGrid(bool useGridLayout = true)
@@ -186,7 +205,6 @@ public class TheGrid : MonoBehaviour
         spawnTriBox(previewBoxes.getCurrentBoxElements());
     }
 
-
     public void Match(List<List<Box>> boxMatchesList)
     {
         if (!boxMatchesList.Any()) return;
@@ -229,7 +247,7 @@ public class TheGrid : MonoBehaviour
 
         Score(totalScore, colorOfBiggestElementMatch);
 
-        if(matchAudioClip)
+        if (matchAudioClip)
         {
             audioSource.clip = matchAudioClip;
             audioSource.Play();
@@ -284,9 +302,20 @@ public class TheGrid : MonoBehaviour
     {
         isMatch3Phase = b;
     }
+
     public void toggleMatch3Phase()
     {
         isMatch3Phase = !isMatch3Phase;
+    }
+
+    public void ToggleMute()
+    {
+        MusicPlayer.ToggleMute(audioSource, ref isMuted, TheGrid.moveTime, audioVolume);
+    }
+
+    public bool IsMuted()
+    {
+        return isMuted;
     }
 
     public Tile GetTile(Point p)

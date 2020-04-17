@@ -2,7 +2,6 @@ using DG.Tweening;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 internal class BoxElementEqualityComparer : IEqualityComparer<Box>
 {
@@ -65,7 +64,7 @@ public class Box : MonoBehaviour
     public bool isHighlighted;
 
     [SerializeField]
-    Tween matchMoveTween;
+    private Tween matchMoveTween;
 
     //probability of each type of box
     private static float[] typeWeights = { 18, 18, 18, 18, 18, 10 };
@@ -301,8 +300,80 @@ public class Box : MonoBehaviour
 
         b.MoveTo(grid_ref.getExpectedPositionFromPoint(b.GetPoint()));
         MoveTo(grid_ref.getExpectedPositionFromPoint(GetPoint()));
+    }
 
+    //from a list of points in the same axis, return the first connected matches
+    public List<Box> getFirstConnectedMatches(List<Box> potentialMatches, bool diagonals = false)
+    {
+        List<Box> result = new List<Box>();
 
+        if (potentialMatches.Any(x => x.GetPoint() == null) || potentialMatches.Count <= 1 || diagonals) return result;
+
+        List<Box> potentialCopy = potentialMatches.ToList();
+        potentialCopy = potentialCopy.Distinct().ToList();
+
+        if (potentialMatches.Any(x => x.GetElement() == Box.Element.grass))
+        {
+            print("oi");
+        }
+
+        List<Box> horizontal = new List<Box>();
+        List<Box> vertical = new List<Box>();
+        List<Box> selected = new List<Box>();
+
+        int posVal = potentialCopy.First().GetPoint().x;
+        horizontal = potentialCopy.FindAll(x => x.GetPoint().x == posVal);
+
+        posVal = potentialCopy.First().GetPoint().y;
+        vertical = potentialCopy.FindAll(x => x.GetPoint().y == posVal);
+
+        //if not all are equal in x
+        if (horizontal.Count <= 1)
+        {
+            //try to see if all are equal in y
+
+            if (vertical.Count <= 1)
+            {
+                //they are not all equal in x or y so impossible to match
+                return result;
+            }
+            else
+            {
+                // find matches vertically
+                selected = vertical.OrderBy(x => x.GetPoint().y).ToList();
+            }
+        }
+        else
+        {
+            //find matches horizontally
+            selected = horizontal.OrderBy(x => x.GetPoint().x).ToList();
+        }
+
+        for (int i = 0; i < selected.Count; i++)
+        {
+            if (i < selected.Count - 1)
+            {
+                //is the next on the list connected to me?
+                if (selected[i].isMyNeighbour(selected[i + 1], false) == true)
+                {
+                    if (!result.Contains(selected[i])) result.Add(selected[i]);
+                    if (!result.Contains(selected[i + 1])) result.Add(selected[i + 1]);
+                }
+                else
+                {
+                    if (result.Contains(selected[i]))
+                    {
+                        if (result.Count < TheGrid.matchSize)
+                        {
+                            result.Clear();
+                        }
+                    }
+                }
+            }
+            else continue;
+        }
+
+        return result;
     }
 
     public List<Box> getConnectedMatches(UtilityTools.Directions axisDir)
@@ -343,6 +414,8 @@ public class Box : MonoBehaviour
 
                     mixedLeft.RemoveAll(x => x.GetElement() != leftElement && x.GetElement() != Box.Element.quintessential);
                     mixedRight.RemoveAll(x => x.GetElement() != rightElement && x.GetElement() != Box.Element.quintessential);
+                    mixedLeft = getFirstConnectedMatches(mixedLeft);
+                    mixedRight = getFirstConnectedMatches(mixedRight);
 
                     bool leftPass = false;
                     bool rightPass = false;
@@ -375,6 +448,7 @@ public class Box : MonoBehaviour
                     {
                         result.Clear();
                     }
+
                     return result;
                 }
                 else
@@ -391,6 +465,7 @@ public class Box : MonoBehaviour
 
             //remove all elements that arent a match (itself or quint)
             result.RemoveAll(x => x.GetElement() != matchElement && x.GetElement() != Box.Element.quintessential);
+            result = getFirstConnectedMatches(result);
 
             //not matches!!!
             if (!areAllConnected(axisDir, result) || result.Count < TheGrid.matchSize || result.Any(y => y.isMatchable() == false))
@@ -433,6 +508,8 @@ public class Box : MonoBehaviour
 
                     mixedDown.RemoveAll(x => x.GetElement() != downElement && x.GetElement() != Box.Element.quintessential);
                     mixedUp.RemoveAll(x => x.GetElement() != upElement && x.GetElement() != Box.Element.quintessential);
+                    mixedDown = getFirstConnectedMatches(mixedDown);
+                    mixedUp = getFirstConnectedMatches(mixedUp);
 
                     bool downPass = false;
                     bool upPass = false;
@@ -465,6 +542,7 @@ public class Box : MonoBehaviour
                     {
                         result.Clear();
                     }
+
                     return result;
                 }
                 else
@@ -481,6 +559,7 @@ public class Box : MonoBehaviour
 
             //remove all elements that arent a match (itself or quint)
             result.RemoveAll(x => x.GetElement() != matchElement && x.GetElement() != Box.Element.quintessential);
+            result = getFirstConnectedMatches(result);
 
             //not matches!!!
             if (!areAllConnected(axisDir, result) || result.Count < TheGrid.matchSize || result.Any(y => y.isMatchable() == false))
@@ -888,7 +967,7 @@ public class Box : MonoBehaviour
     public void OnMouseDown()
     {
         if (!grid_ref.IsMatch3Phase()) return;
-        if(Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0))
         {
             Match3.instance.GrabBox(this);
         }
@@ -906,22 +985,21 @@ public class Box : MonoBehaviour
 
     public void MoveTo(Vector2 destination, bool global = true, bool tween = true, bool tempRemoveParent = true)
     {
-
-        if(matchMoveTween != null)
+        if (matchMoveTween != null)
         {
-            if(matchMoveTween.IsPlaying())
+            if (matchMoveTween.IsPlaying())
             {
                 matchMoveTween.Kill();
             }
         }
         Transform par = transform.parent;
-        if(tempRemoveParent)
+        if (tempRemoveParent)
         {
             transform.parent = null;
         }
         if (transform.parent != null && global)
         {
-            if(tween)
+            if (tween)
             {
                 matchMoveTween = transform.DOMove(destination + (Vector2)transform.parent.position, TheGrid.moveTime).SetEase(Ease.OutQuart);
             }
@@ -929,7 +1007,6 @@ public class Box : MonoBehaviour
             {
                 transform.position = destination + (Vector2)transform.parent.position;
             }
-           
         }
         else if (transform.parent == null && global)
         {
@@ -937,12 +1014,10 @@ public class Box : MonoBehaviour
             {
                 matchMoveTween = transform.DOMove(destination, TheGrid.moveTime).SetEase(Ease.OutQuart);
             }
-                
             else
             {
                 transform.position = destination;
             }
-                
         }
         else
         {
@@ -950,31 +1025,26 @@ public class Box : MonoBehaviour
             {
                 matchMoveTween = transform.DOLocalMove(destination + (Vector2)transform.parent.position, TheGrid.moveTime).SetEase(Ease.OutQuart);
             }
-                
             else
             {
                 transform.localPosition = destination + (Vector2)transform.parent.position;
             }
-               
         }
 
         if (tempRemoveParent)
         {
-            if(tween)
+            if (tween)
             {
                 matchMoveTween.OnComplete(() => { transform.parent = par; });
                 matchMoveTween.OnKill(() => { transform.parent = par; });
             }
             else
-            transform.parent = par;
+                transform.parent = par;
         }
-
-
     }
 
     public void Move(Vector2 amount, bool global = true, bool tween = true)
     {
-
         if (matchMoveTween != null)
         {
             if (matchMoveTween.IsPlaying())
@@ -983,14 +1053,12 @@ public class Box : MonoBehaviour
             }
         }
 
-
         if (transform.parent != null && global)
         {
             matchMoveTween = transform.DOMove((Vector2)transform.position + (Vector2)transform.parent.position + amount, TheGrid.moveTime).SetEase(Ease.OutQuart);
         }
         else if (transform.parent == null && global)
         {
-
             matchMoveTween = transform.DOMove((Vector2)transform.position + amount, TheGrid.moveTime).SetEase(Ease.OutQuart);
         }
         else
@@ -1091,6 +1159,4 @@ public class Box : MonoBehaviour
 
         return result;
     }
-
-   
 }

@@ -1,89 +1,79 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using DG.Tweening;
+﻿using UnityEngine;
 
 public class Match3 : MonoBehaviour
 {
-
     public static Match3 instance;
 
     [SerializeField]
-    Vector2 mouseStart;
+    private Vector2 mouseStart;
 
     [SerializeField]
-    GameObject box_prefab;
+    private GameObject box_prefab;
 
     [SerializeField]
-    Box movingBox;
+    private Box movingBox;
 
     [SerializeField]
-    Tile destination = null;
+    private Tile destination = null;
 
     [SerializeField]
-    Point destinationPoint;
+    private Point destinationPoint;
 
     [SerializeField]
-    TheGrid grid_ref;
+    private TheGrid grid_ref;
 
     [SerializeField]
-    float boxWidth = 0f;
-
-
-    [SerializeField]
-    Vector2 originPoint;
-    [SerializeField]
-    Point add;
+    private float boxWidth = 0f;
 
     [SerializeField]
-    Vector2 pos;
+    private Vector2 originPoint;
 
-   
+    [SerializeField]
+    private Point add;
 
-    void Awake()
+    [SerializeField]
+    private Vector2 pos;
+
+    private void Awake()
     {
         if (grid_ref == null)
             grid_ref = GameObject.FindGameObjectWithTag("Grid").GetComponent<TheGrid>();
 
         instance = this;
 
-        if(box_prefab != null)
-        boxWidth = box_prefab.GetComponent<SpriteRenderer>().sprite.rect.width;
+        if (box_prefab != null)
+            boxWidth = box_prefab.GetComponent<SpriteRenderer>().sprite.rect.width;
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
-
-        
         if (!grid_ref.IsMatch3Phase()) return;
 
-        if(Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space))
         {
-            if(movingBox)
+            if (movingBox)
             {
                 Point p = movingBox.GetPoint().Clone();
                 p.Add(2, 0);
-                movingBox.MoveTo( grid_ref.getExpectedPositionFromPoint(p) + (Vector2)grid_ref.transform.position,true, false,true);
+                movingBox.MoveTo(grid_ref.getExpectedPositionFromPoint(p) + (Vector2)grid_ref.transform.position, true, false, true);
             }
         }
 
         handleMouseMovement();
 
-       // handleMouse2();
+        // handleMouse2();
     }
 
-
-    void handleMouse2()
+    private void handleMouse2()
     {
         if (!grid_ref.IsMatch3Phase()) return;
         if (movingBox != null)
         {
             originPoint = grid_ref.getExpectedPositionFromPoint(movingBox.GetPoint());
-             pos = (Vector2)Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            pos = (Vector2)Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
-             pos.x = Mathf.Clamp(pos.x,originPoint.x - 0.5f, originPoint.x + 0.5f);
+            pos.x = Mathf.Clamp(pos.x, originPoint.x - 0.5f, originPoint.x + 0.5f);
             pos.y = Mathf.Clamp(pos.y, originPoint.y - 0.5f, originPoint.y + 0.5f);
 
             movingBox.transform.position = pos;
@@ -92,7 +82,7 @@ public class Match3 : MonoBehaviour
         }
     }
 
-    void handleMouseMovement()
+    private void handleMouseMovement()
     {
         if (!grid_ref.IsMatch3Phase()) return;
         if (movingBox != null)
@@ -103,15 +93,14 @@ public class Match3 : MonoBehaviour
             Vector2 absoluteDir = new Vector2(Mathf.Abs(direction.x), Mathf.Abs(direction.y));
 
             destinationPoint = movingBox.GetPoint().Clone();
-             add = Point.zero.Clone();
+            add = Point.zero.Clone();
 
             //if mouse moved one sprite distance from origin of the click
-            if (direction.magnitude >= 0.5f )
+            if (direction.magnitude >= 0.5f)
             {
                 if (absoluteDir.x > absoluteDir.y)
                 {
                     add = new Point((normalizedDir.x > 0) ? 1 : -1, 0);
-
                 }
                 else if (absoluteDir.y > absoluteDir.x)
                 {
@@ -127,13 +116,11 @@ public class Match3 : MonoBehaviour
 
             if (!destinationPoint.Equals(movingBox.GetPoint().Clone()))
             {
-               
-               //pos += Point.byMagnitude(add.Clone(), -(int)boxWidth / 4).ToVector2();
-               // pos += new Vector2(add.x / 2, add.y / 2 );
-
+                //pos += Point.byMagnitude(add.Clone(), -(int)boxWidth / 4).ToVector2();
+                // pos += new Vector2(add.x / 2, add.y / 2 );
             }
 
-            if(movingBox.transform.parent != null)
+            if (movingBox.transform.parent != null)
             {
                 movingBox.MoveTo(pos);
             }
@@ -141,10 +128,6 @@ public class Match3 : MonoBehaviour
             {
                 movingBox.MoveTo(pos);
             }
-
-           
-           
-
         }
     }
 
@@ -154,8 +137,8 @@ public class Match3 : MonoBehaviour
 
         movingBox = b;
 
-         mouseStart = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-       // mouseStart = Input.mousePosition;
+        mouseStart = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        // mouseStart = Input.mousePosition;
     }
 
     public void DropBox()
@@ -171,7 +154,7 @@ public class Match3 : MonoBehaviour
         }
         else
         {
-           // movingBox.MoveTo(grid_ref.getExpectedPositionFromPoint(destinationPoint),true, true);
+            // movingBox.MoveTo(grid_ref.getExpectedPositionFromPoint(destinationPoint),true, true);
 
             print("should try to swap");
 
@@ -185,6 +168,5 @@ public class Match3 : MonoBehaviour
         // MoveTo(destination)
 
         movingBox = null;
-
-        }
+    }
 }

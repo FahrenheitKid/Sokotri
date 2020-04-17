@@ -1,27 +1,25 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using DG.Tweening;
 using UnityEngine;
-using DG.Tweening;
 
 public class CircleBG : MonoBehaviour
 {
     [SerializeField]
-     bool isForeground = false;
+    private bool isForeground = false;
+
     [SerializeField]
     public float animationTime = 2f;
 
     [SerializeField]
-    CircleBG otherCircle;
+    private CircleBG otherCircle;
+
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
-        
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        
     }
 
     public void Colorize(Color32 c)
@@ -34,7 +32,6 @@ public class CircleBG : MonoBehaviour
         sr.color = c;
 
         transform.DOScale(new Vector3(10, 10, 1), animationTime).OnStart(() => { otherCircle.setForeground(false); });
-
     }
 
     public void setForeground(bool b)
@@ -43,9 +40,7 @@ public class CircleBG : MonoBehaviour
 
         isForeground = b;
 
-
-
-        if(isForeground == false)
+        if (isForeground == false)
         {
             //transform.localScale = new Vector3(0, 0, 1);
             transform.position = new Vector3(transform.position.x, transform.position.y, 2);
@@ -55,7 +50,7 @@ public class CircleBG : MonoBehaviour
             transform.localScale = Vector3.zero;
             transform.position = new Vector3(transform.position.x, transform.position.y, 1);
 
-          //  otherCircle.setForeground(false);
+            //  otherCircle.setForeground(false);
         }
     }
 

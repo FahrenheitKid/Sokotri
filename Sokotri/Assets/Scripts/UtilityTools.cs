@@ -1,3 +1,4 @@
+using DG.Tweening;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -284,6 +285,28 @@ static public class UtilityTools
         }
 
         return result;
+    }
+
+    public static List<T> FindComponentsWithTag<T>(string tag)
+    {
+        List<T> result = new List<T>();
+
+        if (GameObject.FindGameObjectsWithTag(tag).Length == 0) return result;
+
+        foreach (GameObject go in GameObject.FindGameObjectsWithTag(tag))
+        {
+            T temp = go.GetComponent<T>();
+            if (temp != null)
+                result.Add(temp);
+        }
+
+        return result;
+    }
+
+    public static void updateTextWithPunch(TMPro.TextMeshProUGUI textUI, string newText, Vector3 punch, float animTime, bool relative = false)
+    {
+        textUI.text = newText;
+        textUI.transform.DOPunchScale(punch, animTime).SetRelative(relative);
     }
 
     public static bool IsSameOrSubclass(System.Type potentialBase, System.Type potentialDescendant)
