@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using DG.Tweening;
 
 public class TheGrid : MonoBehaviour
 {
@@ -14,6 +15,9 @@ public class TheGrid : MonoBehaviour
 
     [SerializeField]
     private Player player;
+
+    [SerializeField]
+    private GameObject gridLayout_ref;
 
     [SerializeField]
     private Match3 match3_ref;
@@ -315,6 +319,35 @@ public class TheGrid : MonoBehaviour
     public void toggleMatch3Phase()
     {
         isMatch3Phase = !isMatch3Phase;
+
+        //darrken some sprites when in this mode
+        float h, s, v;
+
+        if (gridLayout_ref)
+            {
+                foreach (Transform go in gridLayout_ref.transform)
+                {
+                    SpriteRenderer tile = go.GetComponent<SpriteRenderer>();
+                    if(tile !=null)
+                    {
+
+                        Color normal = Tile.getKindColor( go.GetComponent<Tile>().GetKind());
+
+                   
+                    Color.RGBToHSV(normal, out h, out s, out v);
+
+                    v *= 0.5f;
+
+                    Color desaturated = Color.HSVToRGB(h, s, v);
+                    
+                    tile.DOColor((isMatch3Phase) ? desaturated : normal, TheGrid.moveTime * 2);
+
+                }
+                }
+               
+            }
+                player.GetComponent<SpriteRenderer>().DOColor((isMatch3Phase) ? Color.gray : Color.white, TheGrid.moveTime * 2);
+        
     }
 
     public void ToggleMute()

@@ -104,6 +104,23 @@ public class Tile : MonoBehaviour
         }
     }
 
+    public static Color getKindColor(Tile.Kind k)
+    {
+        if (k == Kind.management)
+        {
+            return new Color32(248, 174, 255, 255);
+        }
+        else if (k == Kind.spawn)
+        {
+            return new Color32(196, 137, 205, 255);
+        }
+        else
+        {
+            return Color.white;
+           
+        }
+    }
+
     //check if this tile and neighbours are of a specific type and status
     public bool AreMeAndNeighbours(Kind k, Status s, bool vertical, bool horizontal)
     {

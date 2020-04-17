@@ -67,7 +67,7 @@ public class Box : MonoBehaviour
     private Tween matchMoveTween;
 
     //probability of each type of box
-    private static float[] typeWeights = { 18, 18, 18, 18, 18, 10 };
+    private static float[] typeWeights = { 18, 18, 18, 18, 18, 100 };
 
     // Start is called before the first frame update
     private void Start()
