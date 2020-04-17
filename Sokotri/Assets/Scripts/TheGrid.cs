@@ -8,6 +8,22 @@ using UnityEngine.SceneManagement;
 public class TheGrid : MonoBehaviour
 {
     private Tile.Kind[,] gridLayout;
+
+    public static int[,] defaultLayoutMap = new int[13, 13] {
+                    {0,0,0,0,0,0,0,0,0,0,0,0,0},
+                    {0,0,0,0,0,0,0,0,0,0,0,0,0},
+                    {0,0,0,0,0,0,0,0,0,0,0,0,0},
+                    {0,0,0,0,0,0,0,0,0,0,0,0,0},
+                    {0,0,0,0,3,3,3,3,3,0,0,0,0},
+                    {0,0,0,0,3,3,4,3,3,0,0,0,0},
+                    {0,0,0,0,3,3,4,3,3,0,0,0,0},
+                    {0,0,0,0,3,3,4,3,3,0,0,0,0},
+                    {0,0,0,0,3,3,3,3,3,0,0,0,0},
+                    {0,0,0,0,0,0,0,0,0,0,0,0,0},
+                    {0,0,0,0,0,0,0,0,0,0,0,0,0},
+                    {0,0,0,0,0,0,0,0,0,0,0,0,0},
+                    {0,0,0,0,0,0,0,0,0,0,0,0,0 } };
+
     private Tile[,] grid;
 
     [SerializeField]
@@ -92,7 +108,14 @@ public class TheGrid : MonoBehaviour
     {
         // Make the game run as fast as possible
         Application.targetFrameRate = 60;
+
+#if UNITY_STANDALONE
         Screen.SetResolution(1920, 1080, true);
+#endif
+
+#if UNITY_WEBGL
+        Screen.SetResolution(1280, 720, false);
+#endif
     }
 
     // Start is called before the first frame update
@@ -115,12 +138,23 @@ public class TheGrid : MonoBehaviour
 
         Random.InitState(seed.GetHashCode());
 
-        if (loadMapFilename.Any())
+#if UNITY_STANDALONE
+         if (loadMapFilename.Any())
         {
             loadGridLayoutFromFile(Application.streamingAssetsPath + "\\" + loadMapFilename);
-            width = gridLayout.GetLength(0);
-            height = gridLayout.GetLength(1);
         }
+#endif
+
+#if UNITY_WEBGL
+        loadGridLayoutFromArray(defaultLayoutMap);
+#endif
+        
+        if(gridLayout == null)
+        {
+            loadGridLayoutFromArray(defaultLayoutMap);
+        }
+        width = gridLayout.GetLength(0);
+        height = gridLayout.GetLength(1);
 
         //making sure default values are valid
         width = (width < 0) ? 0 : width;
@@ -310,6 +344,20 @@ public class TheGrid : MonoBehaviour
     private void loadGridLayoutFromFile(string filep)
     {
         gridLayout = Load(filep);
+    }
+
+    private void loadGridLayoutFromArray(int[,] map)
+    {
+        Tile.Kind[,] layout = new Tile.Kind[map.GetLength(0), map.GetLength(1)];
+
+        for (int i = 0; i < map.GetLength(0) && i < layout.GetLength(0); i++)
+        {
+            for (int j = 0; j < map.GetLength(0) && j < layout.GetLength(0); j++)
+            {
+                layout[i, j] = (Tile.Kind)map[i, j];
+            }
+        }
+        gridLayout = layout;
     }
 
     public int getWidth()
